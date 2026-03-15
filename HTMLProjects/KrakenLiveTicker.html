@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Kraken Pro High-Density</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div id="watchlist">
+            <div style="padding: 15px 10px 5px 10px;">
+                <div class="watchlist-tabs">
+                    <button class="tab-btn active" onclick="setFilter('main')">Main</button>
+                    <button class="tab-btn" onclick="setFilter('trending')">Trending</button>
+                    <button class="tab-btn" onclick="setFilter('volume')">Volume</button>
+                </div>
+            </div>
+            <input type="text" id="search-input" placeholder="Search Assets...">
+            <div id="watchlist-content">Loading assets...</div>
+        </div>
+        <div id="chart-wrapper">
+            <div id="tv_main_chart" style="height: 100%;"></div>
+        </div>
+    </div>
+    <div class="chart-section">
+    <div id="tv_main_chart"></div>
+</div>
+
+<div class="main-content">
+    </div>
+    
+        <script src="scripts.js"></script>
+
+</body>
+
+</html>

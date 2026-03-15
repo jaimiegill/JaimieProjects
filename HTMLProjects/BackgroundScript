@@ -1,0 +1,82 @@
+const canvas = document.getElementById('binaryCanvas');
+const ctx = canvas.getContext('2d');
+
+let width, height;
+const fontSize = 20; 
+let columns, rows;
+let grid = [];
+
+function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    columns = Math.floor(width / fontSize);
+    rows = Math.floor(height / fontSize);
+    
+    // Initialize grid with empty states
+    grid = [];
+    for (let x = 0; x < columns; x++) {
+        for (let y = 0; y < rows; y++) {
+            grid.push({
+                x: x * fontSize,
+                y: y * fontSize,
+                value: Math.random() > 0.5 ? "1" : "0",
+                alpha: 0,
+                targetAlpha: 0,
+                speed: Math.random() * 0.00002 + 0.005 // How fast it fades
+            });
+        }
+    }
+}
+
+function draw() {
+    // Clear background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.font = fontSize + 'px monospace';
+
+    grid.forEach(cell => {
+        // Randomly decide to start a fade-in if the cell is invisible
+        if (cell.alpha <= 0 && Math.random() > 0.998) {
+            cell.targetAlpha = Math.random() * 0.5 + 0.2; // Peak brightness
+            cell.value = Math.random() > 0.5 ? "1" : "0"; // New value
+        }
+
+        // Logic for fading in and out
+        if (cell.alpha < cell.targetAlpha) {
+            cell.alpha += cell.speed; // Fading in
+        } else if (cell.targetAlpha > 0) {
+            cell.targetAlpha = 0; // Reach peak, now start fading out
+        } else if (cell.alpha > 0) {
+            cell.alpha -= cell.speed; // Fading out
+        }
+
+        // Ensure alpha stays within bounds
+        cell.alpha = Math.max(0, cell.alpha);
+
+        if (cell.alpha > 0) {
+            ctx.fillStyle = `rgba(255, 255, 255, ${cell.alpha})`;
+            ctx.fillText(cell.value, cell.x, cell.y);
+        }
+    });
+
+    requestAnimationFrame(draw);
+}
+
+window.addEventListener('resize', resize);
+resize();
+draw();
+
+#binaryCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-color: #000000;
+    opacity: 0.5; /* Increased slightly since they flicker now */
+    pointer-events: none;
+}
+
+<canvas id="binaryCanvas"></canvas>
