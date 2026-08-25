@@ -1,0 +1,61 @@
+[
+    {
+        "SpawnedDog": 1,
+        "DogProfiles": [
+            {
+                "DogId": 1,
+                "PrimaryJob": 2243406566,
+                "SecondaryJob": 0,
+                "CompanionLevel": 30,
+                "PrimaryJobLevel": 15,
+                "SecondaryJobLevel": 0,
+                "DogHash": 408719552,
+                "Gender": 0,
+                "FurVariationIndex": 0,
+                "SavedAt": 1787605105,
+                "CurrentCompanionXP": 2783.002197265625,
+                "CurrentPrimaryJobXP": 2156.25,
+                "CurrentSecondaryJobXP": 0.0,
+                "Bond": 1.25,
+                "Focus": 125.0,
+                "TraitsOwned": [
+                    758186881,
+                    1810705123,
+                    3694331738,
+                    2430597906,
+                    902011446,
+                    2965052889,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                ],
+                "DogName": "b'Frank\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'",
+                "Awareness": 1.0
+            }
+        ],
+        "DogCommandWheelUsageCount": 375
+    }
+]
