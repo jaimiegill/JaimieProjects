@@ -1,0 +1,769 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ==========================================================================
+   1. Base Rules & Reset
+   ========================================================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  image-rendering: pixelated; /* Essential for pixel art sharp edges */
+}
+
+body {
+  background-color: #121218;
+  font-family: 'Press Start 2P', monospace;
+  line-height: 1.5;
+  padding-top: 115px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.box-toggle-checkbox {
+  display: none;
+}
+
+/* ==========================================================================
+   2. Top Header Navigation Banner (Same as before)
+   ========================================================================== */
+.banner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 115px;
+  background-color: #181824;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-bottom: 4px solid #ff0055;
+  box-shadow: 0 4px 0 #000000;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.banner-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.25),
+    rgba(0, 0, 0, 0.25) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.banner-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  z-index: 2;
+  position: relative;
+}
+
+.pixel-title {
+  font-size: 1.6rem;
+  color: #ffe600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  user-select: none;
+  animation: neon-flicker 3s infinite steps(1);
+}
+
+.pixel-reel-icon {
+  width: 32px;
+  height: 18px;
+  background-color: #000000;
+  border: 2px solid #00f0ff;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 2px;
+}
+
+.reel-spool {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px dashed #ffe600;
+  animation: spin-reel 1.2s infinite linear;
+}
+
+.reel-spool.right-spool {
+  animation-direction: reverse;
+}
+
+.pixel-equalizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 20px;
+  background: #000000;
+  padding: 2px 4px;
+  border: 2px solid #ff0055;
+}
+
+.eq-bar {
+  width: 4px;
+  background-color: #00f0ff;
+}
+
+.bar-1 { animation: eq-bounce-1 0.6s infinite steps(4); }
+.bar-2 { animation: eq-bounce-2 0.8s infinite steps(4); }
+.bar-3 { animation: eq-bounce-1 0.5s infinite steps(4); }
+.bar-4 { animation: eq-bounce-2 0.7s infinite steps(4); }
+.bar-5 { animation: eq-bounce-1 0.9s infinite steps(4); }
+
+.rec-badge {
+  position: absolute;
+  right: -90px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.45rem;
+  color: #ff0055;
+  background: #000000;
+  border: 1px solid #ff0055;
+  padding: 3px 6px;
+}
+
+.rec-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ff0055;
+  border-radius: 50%;
+  animation: rec-blink 1s infinite steps(1);
+}
+
+.banner-selector {
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.select-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: #00f0ff;
+  background-color: #121218;
+  border: 2px solid #000000;
+  padding: 6px 10px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+.select-btn:hover,
+.select-btn.active {
+  background-color: #ff0055;
+  color: #ffe600;
+  box-shadow: 2px 2px 0px #00f0ff;
+}
+
+@keyframes spin-reel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes eq-bounce-1 {
+  0%, 100% { height: 4px; background-color: #00f0ff; }
+  50% { height: 16px; background-color: #ffe600; }
+}
+
+@keyframes eq-bounce-2 {
+  0%, 100% { height: 14px; background-color: #ff0055; }
+  50% { height: 6px; background-color: #00f0ff; }
+}
+
+@keyframes neon-flicker {
+  0%, 100% {
+    text-shadow: 
+      2px 2px 0px #ff0055,
+      4px 4px 0px #ff0055,
+      6px 6px 0px #00f0ff,
+      8px 8px 0px #00f0ff,
+      10px 10px 0px #000000;
+  }
+  50% {
+    text-shadow: 
+      2px 2px 0px #00f0ff,
+      4px 4px 0px #00f0ff,
+      6px 6px 0px #ff0055,
+      8px 8px 0px #ff0055,
+      10px 10px 0px #000000;
+  }
+  92% { opacity: 1; }
+  93% { opacity: 0.4; }
+  94% { opacity: 1; }
+  96% { opacity: 0.2; }
+  97% { opacity: 1; }
+}
+
+/* ==========================================================================
+   3. Highly Detailed & Realistic Front-Facing Cassettes
+   ========================================================================== */
+.front-tape {
+  width: 175px;
+  height: 115px;
+  border: 4px solid #000000;
+  border-radius: 4px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  /* More realistic plastic shading */
+  background: linear-gradient(135deg, #222 0%, #111 100%);
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.2), 
+    inset -2px -2px 0 rgba(0,0,0,0.5),
+    0 4px 0 #000000;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  overflow: hidden;
+  /* UPDATED HOVER: No shooting up, just a gentle scale/lift */
+  transition: transform 0.08s step-end;
+}
+
+.front-tape:hover {
+  transform: scale(1.03) translateY(-3px);
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.25), 
+    0 0 10px rgba(0, 240, 255, 0.6),
+    0 6px 0 #000000;
+  z-index: 10;
+}
+
+.front-tape.active {
+  border-color: #ffe600;
+  box-shadow: 
+    inset 2px 2px 0 rgba(255,255,255,0.25), 
+    0 0 10px rgba(255, 0, 85, 0.7),
+    0 4px 0 #000000;
+}
+
+/* New: 4 Corner Screws for Detail */
+.tape-screws {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.tape-screws span {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: #aaaaaa;
+  border: 1px solid #000000;
+  border-radius: 50%;
+  box-shadow: inset 1px 1px 0 #ffffff;
+}
+.tape-screws span:nth-child(1) { top: 3px; left: 3px; }
+.tape-screws span:nth-child(2) { top: 3px; right: 3px; }
+.tape-screws span:nth-child(3) { bottom: 3px; left: 3px; }
+.tape-screws span:nth-child(4) { bottom: 3px; right: 3px; }
+
+/* Refined Glare Overlay */
+.tape-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 40%, transparent 100%);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Refined Paper Label */
+.tape-label-area {
+  width: 100%;
+  height: 38px;
+  border: 2px solid #000000;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+  box-shadow: inset 2px 2px 0 rgba(0,0,0,0.15);
+}
+
+.tape-type, .tape-time {
+  font-size: 0.35rem;
+  font-weight: bold;
+}
+
+.label-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.tape-title-text {
+  font-size: 0.48rem;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.tape-spine-detail {
+  font-size: 0.3rem;
+  color: #333;
+  margin-top: 2px;
+}
+
+/* Refined Spool Window */
+.tape-window {
+  width: 85%;
+  height: 32px;
+  margin: 0 auto;
+  background-color: #0d0d14;
+  border: 2px solid #000000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  position: relative;
+  box-shadow: inset 3px 3px 0 #000000;
+}
+
+.spool {
+  width: 22px;
+  height: 22px;
+  background-color: #ffffff;
+  border: 3px solid #000000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 2px #aaaaaa;
+  z-index: 2;
+}
+
+.front-tape:hover .spool {
+  animation: spin-reel 1s infinite linear;
+}
+.front-tape:hover .right-spool {
+  animation-direction: reverse;
+}
+
+.spool-teeth {
+  width: 8px;
+  height: 8px;
+  background-color: #000000;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+}
+
+.ribbon {
+  position: absolute;
+  top: 50%;
+  left: 24px;
+  right: 24px;
+  height: 10px;
+  background-color: #4a2810;
+  transform: translateY(-50%);
+  border-top: 1px solid #1c0e04;
+  border-bottom: 1px solid #1c0e04;
+  z-index: 1;
+  /* Add subtle texture to tape ribbon */
+  background-image: repeating-linear-gradient(90deg, transparent, transparent 1px, rgba(0,0,0,0.1) 1px, rgba(0,0,0,0.1) 2px);
+}
+
+/* Refined Bottom Head Trap Wedge */
+.tape-bottom-wedge {
+  width: 65%;
+  height: 14px;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-top: 2px solid #000000;
+  border-left: 3px solid #000000;
+  border-right: 3px solid #000000;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.1);
+}
+
+/* Color Schemes */
+.tape-synth { background-color: #d62b70; }
+.tape-synth .tape-label-area { background-color: #00d2ff; color: #000000; }
+
+.tape-blue { background-color: #1f4c8b; }
+.tape-blue .tape-label-area { background-color: #fcf4cf; color: #1f4c8b; }
+
+.tape-orange { background-color: #e67312; }
+.tape-orange .tape-label-area { background-color: #169e83; color: #ffffff; }
+
+.tape-green { background-color: #1f8a4c; }
+.tape-green .tape-label-area { background-color: #ccff00; color: #000000; }
+
+.tape-dark { background-color: #222927; }
+.tape-dark .tape-label-area { background-color: #354542; color: #8faea7; }
+
+/* ==========================================================================
+   4. NEW VIBRANT & ATTRACTIVE Collection Banner with Treasure/Arcade Art
+   ========================================================================== */
+.carousel-bar {
+  position: fixed;
+  top: 115px;
+  left: 310px;
+  right: 0;
+  height: 185px;
+  background-color: #2b2b3d;
+  background-image: 
+    repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.15) 10px, rgba(0,0,0,0.15) 20px),
+    linear-gradient(180deg, #3d3d5c 0%, #1f1f2e 100%);
+  border-bottom: 4px solid #00f0ff;
+  border-left: 4px solid #00f0ff;
+  display: none;
+  flex-direction: column;
+  padding: 8px 12px;
+  z-index: 850;
+  box-shadow: 
+    0 6px 0 #000000,
+    inset 2px 2px 0 #5c5c8a;
+  overflow: hidden; /* Contains decorative elements */
+}
+
+/* Decorative Pixel Art Elements Container */
+.banner-decor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+.decor-left { left: 10px; }
+.decor-right { right: 10px; }
+
+/* Illustrative Pixel Art CSS */
+.gold-stacks {
+  width: 40px;
+  height: 25px;
+  background-color: #ffd700;
+  border: 2px solid #000000;
+  position: relative;
+  box-shadow: inset 4px 4px 0 #ffe600, inset -2px -2px 0 #daa520;
+}
+.gold-stacks::after { /* Second bar in stack */
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 6px;
+  width: 30px;
+  height: 15px;
+  background-color: #ffd700;
+  border: 2px solid #000000;
+  box-shadow: inset 3px 3px 0 #ffe600, inset -2px -2px 0 #daa520;
+}
+
+.coin-piles {
+  width: 30px;
+  height: 30px;
+  background-color: #daa520;
+  border: 2px solid #000000;
+  border-radius: 50%;
+  position: relative;
+  box-shadow: inset 4px 4px 0 #ffe600;
+}
+.coin-piles::after { content: '$'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #000; font-size: 0.6rem;}
+
+.gem-scatter {
+  width: 20px;
+  height: 20px;
+  background-color: #ff0000; /* Ruby red */
+  clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%);
+  border: 2px solid #000000;
+  box-shadow: inset 4px 4px 0 #ff6666, 2px 2px 0 #ffe600; /* Yellow highlight */
+}
+.gem-scatter:nth-child(2) { background-color: #00ff00; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); } /* Emerald green */
+
+.arcade-cabinet-mini {
+  width: 50px;
+  height: 60px;
+  background-color: #333;
+  border: 3px solid #000;
+  box-shadow: inset 4px 4px 0 #666;
+  position: relative;
+}
+.arcade-cabinet-mini::before { /* Marquee */ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 10px; background-color: #ff0055; border-bottom: 2px solid #000;}
+.pixel-sprite.hero {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 20px;
+  height: 20px;
+  background-color: #00f0ff;
+  border: 2px solid #000;
+  box-shadow: inset 3px 3px 0 #ffe600; /* Sprite face detail */
+}
+
+.pixel-arcade-icon {
+  width: 20px;
+  height: 20px;
+  background-color: #ff0055;
+  border: 2px solid #000;
+}
+.pixel-arcade-icon.joystick { clip-path: polygon(40% 0%, 60% 0%, 60% 30%, 100% 30%, 100% 70%, 60% 70%, 60% 100%, 40% 100%, 40% 70%, 0% 70%, 0% 30%, 40% 30%); background: #aa00aa;}
+.pixel-arcade-icon.buttons { width: 40px; display: flex; gap: 4px; border: none; background: transparent; }
+.pixel-arcade-icon.buttons::before, .pixel-arcade-icon.buttons::after { content: ''; width: 16px; height: 16px; border: 2px solid #000; border-radius: 50%; box-shadow: inset 3px 3px 0 #ffe600; }
+.pixel-arcade-icon.buttons::before { background: #00f0ff; } .pixel-arcade-icon.buttons::after { background: #ff0055; }
+
+/* Status Bar & Tray Layout (Updated spacing for decor) */
+.rack-corner {
+  z-index: 10;
+}
+.rack-corner.top-left { left: 4px; }
+.rack-corner.top-right { right: 4px; }
+
+.carousel-status-bar {
+  margin: 0 110px 6px 110px; /* Leave space for decor */
+}
+
+.carousel-title-tag {
+  font-size: 0.5rem;
+  color: #ffe600;
+}
+
+/* Recessed Felt Tray Shelf (Updated spacing for decor) */
+.carousel-tray {
+  margin: 0 110px 4px 110px; /* Leave space for decor */
+  background-color: #0d0d14;
+  border: 3px solid #000000;
+  padding: 8px 6px 4px 6px;
+  box-shadow: 
+    inset 4px 4px 8px #000000,
+    inset -2px -2px 0px #222233;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: visible;
+  height: 100%;
+  padding: 4px;
+  scrollbar-width: auto;
+  scrollbar-color: #ff0055 #0b0b10;
+}
+
+/* Custom Scrollbar */
+.carousel-track::-webkit-scrollbar {
+  height: 8px;
+}
+.carousel-track::-webkit-scrollbar-track {
+  background: #0b0b10;
+  border: 1px solid #000000;
+}
+.carousel-track::-webkit-scrollbar-thumb {
+  background: #ff0055;
+  border: 1px solid #000000;
+  box-shadow: inset 1px 1px 0 #ff6699;
+}
+
+/* Display State Trigger */
+.box-toggle-checkbox:checked ~ .carousel-bar {
+  display: flex;
+}
+
+/* ==========================================================================
+   5. Wooden Storage Box & Acrylic Cover (Sidebar) (Same as before)
+   ========================================================================== */
+.sidebar {
+  position: fixed;
+  top: 115px;
+  left: 0;
+  width: 310px;
+  height: calc(100vh - 115px);
+  background-color: #121218;
+  border-right: 4px solid #00f0ff;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 900;
+}
+
+.wooden-box-wrapper {
+  display: block;
+  cursor: pointer;
+  user-select: none;
+}
+
+.wooden-box-wrapper:hover .wooden-box {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 0 #000000,
+    0 0 12px rgba(255, 230, 0, 0.4);
+}
+
+.wooden-box {
+  position: relative;
+  background-color: #4a2810;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.18) 3px, rgba(0, 0, 0, 0.18) 6px),
+    linear-gradient(90deg, #2e1506 0%, #5c3417 20%, #42210a 40%, #693b1b 60%, #381a07 80%, #522c12 100%);
+  border: 4px solid #140702;
+  padding: 10px;
+  box-shadow: 
+    5px 5px 0px #000000,
+    inset 4px 4px 0px #8c532b,
+    inset -4px -4px 0px #210d02,
+    inset 0 0 0 2px #381a07;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: transform 0.1s step-end, box-shadow 0.1s step-end;
+}
+
+.corner-bracket {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background-color: #e6ab22;
+  border: 2px solid #000000;
+  box-shadow: inset -2px -2px 0px #996e10, inset 2px 2px 0px #fff2a3;
+  z-index: 10;
+}
+.corner-bracket.top-left { top: -2px; left: -2px; }
+.corner-bracket.top-right { top: -2px; right: -2px; }
+.corner-bracket.bottom-left { bottom: -2px; left: -2px; }
+.corner-bracket.bottom-right { bottom: -2px; right: -2px; }
+
+.box-header-label {
+  position: relative;
+  font-size: 0.42rem;
+  color: #ffe600;
+  text-align: center;
+  background: #241206;
+  padding: 8px 6px;
+  border: 2px solid #000000;
+  box-shadow: 
+    inset 2px 2px 0px #4d2d14,
+    inset -2px -2px 0px #120802,
+    0 2px 0 #000000;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.plaque-screw {
+  width: 5px;
+  height: 5px;
+  background-color: #a37213;
+  border: 1px solid #000000;
+  border-radius: 50%;
+  box-shadow: inset 1px 1px 0 #ffe600;
+}
+
+.rack-frame {
+  position: relative;
+  background-color: #120903;
+  padding: 4px;
+  border: 3px solid #000000;
+  box-shadow: inset 4px 4px 0px #080401, inset -2px -2px 0px #2e1709;
+}
+
+.box-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background-color: #180c04;
+}
+
+.upright-tape {
+  width: 100%;
+  height: 28px;
+  border: 2px solid #000000;
+  margin-top: -2px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35);
+  position: relative;
+  z-index: 1;
+  user-select: none;
+}
+.upright-tape:first-child { margin-top: 0; }
+
+.tab-notch {
+  width: 6px;
+  height: 10px;
+  background: #000000;
+  border-radius: 1px;
+}
+
+.tape-label {
+  flex: 1;
+  height: 16px;
+  margin: 0 6px;
+  border: 1px solid #000000;
+  font-size: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.plastic-cover {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.08) 35%,
+    rgba(255, 255, 255, 0.0) 50%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  border: 3px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 
+    inset 0 0 10px rgba(255, 255, 255, 0.25),
+    inset 0 0 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px #000000;
+  pointer-events: none;
+  z-index: 20;
+  overflow: hidden;
+}
+
+.plastic-glare {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    115deg,
+    transparent 42%,
+    rgba(255, 255, 255, 0.45) 45%,
+    rgba(255, 255, 255, 0.65) 47%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 53%
+  );
+  pointer-events: none;
+}
+
+.content-container {
+  margin-left: 310px;
+  padding: 24px;
+}
