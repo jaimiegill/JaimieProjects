@@ -1,16 +1,20 @@
-# Virtual Environments
+# Virtual Environments & Python Cache
 .venv/
 venv/
 ENV/
-
-# Python Cache
 __pycache__/
 *.pyc
 *.pyo
 
 # System & OS Files
 .DS_Store
+
+# Generated Game Dumps & Output Directories
 DecodedADFJSONFormat/
 DecodedBinariesADFFormat/
 DecodedNeedZoneData/
+map_cache/
 *.txt
+
+# Binary / Dynamic Link Libraries
+*.dll
