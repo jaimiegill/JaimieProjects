@@ -10,3 +10,7 @@ __pycache__/
 
 # System & OS Files
 .DS_Store
+DecodedADFJSONFormat/
+DecodedBinariesADFFormat/
+DecodedNeedZoneData/
+*.txt
