@@ -327,6 +327,12 @@ class Processor:
                 node = db.db().node_where_uid(index)
                 try:
                     results[i] = (index, func(node, db))
+                except (PermissionError, OSError) as exc:
+                    self._comm.log(
+                        f"loop_over_uid_wrapper: skipped inaccessible file: "
+                        f"{node.p_path} ({exc})"
+                    )
+                    results[i] = (index, False)
                 except:
                     cn = node
                     while cn is not None:

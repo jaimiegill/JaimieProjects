@@ -1,6 +1,7 @@
 from collections import Counter
 import io
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -17,10 +18,18 @@ import pandas as pd
 from PIL import Image, ImageDraw
 
 from ADF_Reader import GLOBAL_SPECIES_PROFILES
+from species_metadata import SPECIES_METADATA
 
 # --- File Paths ---
 ZONE_FILE = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedNeedZoneData\need_zones.csv")
 ANIMAL_FILE = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedADFJSONFormat\all_animals.json")
+SPECIES_HASH_REPORT = Path(r"C:\Users\gills\Results_readable\species_hash_report.json")
+STATIC_ANIMAL_CATALOG = Path(
+    os.environ.get("COTW_STATIC_INDEX", r"E:\COTWTrackerCache")
+) / "static_animal_catalog.json"
+MASTER_ZONE_FILE = Path(
+    os.environ.get("COTW_STATIC_INDEX", r"E:\COTWTrackerCache")
+) / "need_zone_master.csv"
 MAP_CACHE_DIR = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\map_cache")
 MAP_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -245,6 +254,84 @@ ANIMAL_TYPE_HASH_NAMES = {
     2119612362: "Banteng",
 }
 
+VERIFIED_HASH_SPECIES_OVERRIDES = {
+    0x61D18658: "Warthog",
+    0xB79E88B2: "Warthog",
+    0x862B4FB0: "Blue Wildebeest",
+    0x82770585: "Blue Wildebeest",
+    0x92411D2A: "Scrub Hare",
+    0x0520122F: "Scrub Hare",
+    0x62F546BD: "Blue Wildebeest",
+    0x0AF54EC2: "Blue Wildebeest",
+    0x57703ADF: "Side-Striped Jackal",
+    0x2FDCAF40: "Side-Striped Jackal",
+}
+
+RESERVE_HASH_SPECIES_OVERRIDES = {
+    # Parque Fernando reuses hashes that the global report associates with
+    # species from other reserves.
+    4: {
+        0xCB0DA701: "Axis Deer",
+        0x68B2DEB2: "Cinnamon Teal",
+        0x2C52E985: "Water Buffalo",
+        0x671D4603: "Puma",
+    },
+    8: {
+        0xA2E717D8: "Ring-Necked Pheasant",
+        0xC5D0C033: "Ring-Necked Pheasant",
+        0xE4746DB6: "Beceite Ibex",
+        0x6E5A275A: "Beceite Ibex",
+    },
+    10: {
+        0x4A0A4E9F: "Wild Turkey",
+        0x81E18062: "Wild Turkey",
+        0x80818794: "Feral Goat",
+        0xC1784891: "Feral Goat",
+        0x828D37E0: "Fallow Deer",
+        0x2F9AC7B7: "Fallow Deer",
+        0xD19E69E0: "Feral Pig",
+        0x2D774864: "Feral Pig",
+        0xE5BE7394: "Sika Deer",
+        0xBA6F80F5: "Sika Deer",
+        0x26FA9F96: "Red Deer",
+        0x1998199C: "Red Deer",
+    },
+    12: {
+        # The save links these green-winged teal records to an alligator zone.
+        0xCCA8FDF2: "Green-winged Teal",
+        0xBAF2D3A2: "American Alligator",
+    },
+    14: {
+        0x6B7BBB47: "Eastern Wild Turkey",
+        0x0F0E0C0D: "Goldeneye",
+    },
+    16: {
+        0x78A83A54: "Magpie Goose",
+        0x5A6BDC6E: "Magpie Goose",
+        0x46DAB4DE: "Hog Deer",
+        0x68A2CA: "Hog Deer",
+        0x99155DEF: "Eastern Grey Kangaroo",
+        0x739A4F18: "Eastern Grey Kangaroo",
+        0xD19E69E0: "Feral Pig",
+        0xED7CE362: "Sambar",
+        0x8FF3825F: "Sambar",
+        0xA2CBC896: "Saltwater Crocodile",
+        0xBA302E00: "Saltwater Crocodile",
+        0x7E56B7CA: "Banteng",
+        0xA46DF63D: "Banteng",
+        0x8527AFD1: "Red Fox",
+        0xF08293A6: "Red Fox",
+    },
+    6: {
+        0xD0B0397E: "Moose",
+        0xA58D7467: "Caribou",
+        0xD9CA14CA: "Plains Bison",
+        0x8527AFD1: "Red Fox",
+    },
+}
+
+RESERVE_STATIC_NAME_HASHES = {}
+
 # Trophy-rating ranges from the COTW Rating table.  They are used together
 # with weight ranges to identify otherwise unknown animal type hashes.
 TROPHY_RATING_RANGES = {
@@ -300,7 +387,53 @@ TROPHY_RATING_RANGES = {
     "Ronda Ibex": (0.0, 119.9),
     "Southeastern Spanish Ibex": (0.0, 99.6),
     "Eastern Grey Kangaroo": (0.0, 530.0),
-    "Saltwater Crocodile": (1100.0, 1100.0),
+    "Saltwater Crocodile": (0.0, 168.1),
+}
+
+SPECIES_MAX_DIFFICULTY = {
+    # Regular difficulty maximums. Great Ones are represented separately as 10.
+    "Mallard": 3, "Teal": 3, "Cinnamon Teal": 3,
+    "Scrub Hare": 3, "European Rabbit": 3,
+    "Siberian Musk Deer": 3, "Roe Deer": 3,
+    "Turkey": 3, "Wild Turkey": 3, "Eastern Wild Turkey": 3,
+    "Rio Grande Turkey": 3, "Merriam's Turkey": 3,
+    "Canada Goose": 3, "Greylag Goose": 3,
+    "Harlequin Duck": 3, "Pheasant": 3, "Ring-Necked Pheasant": 3,
+    "White-tailed Jackrabbit": 3, "Mountain Hare": 3,
+    "Coyote": 5, "Red Fox": 5, "Side-Striped Jackal": 5,
+    "European Hare": 5, "Blackbuck": 5, "Springbok": 5,
+    "Lesser Kudu": 5, "Warthog": 5, "Blue Wildebeest": 5,
+    "Mountain Goat": 5, "Pronghorn": 5, "Iberian Mouflon": 5,
+    "Beceite Ibex": 5, "Ronda Ibex": 5, "Gredos Ibex": 5,
+    "Southeastern Spanish Ibex": 5, "Feral Goat": 5,
+    "Feral Pig": 5, "Wild Boar": 5, "Collared Peccary": 5,
+    "Blacktail Deer": 5, "Whitetail Deer": 3, "Fallow Deer": 5,
+    "Axis Deer": 5, "Javan Rusa": 5, "Sambar": 5, "Sambar Deer": 5,
+    "Chamois": 5, "Hog Deer": 5, "Roe Deer": 3,
+    "Eurasian Lynx": 9, "Puma": 9, "Mountain Lion": 9,
+    "Black Bear": 9, "Brown Bear": 9, "Grizzly Bear": 9,
+    "Gray Wolf": 9, "Iberian Wolf": 9, "Lion": 9,
+    "Red Deer": 9, "Roosevelt Elk": 9, "Moose": 5,
+    "European Bison": 9, "Plains Bison": 9, "Cape Buffalo": 9,
+    "Water Buffalo": 9, "Saltwater Crocodile": 9,
+}
+
+GREAT_ONE_SPECIES = {
+    "Whitetail Deer", "Red Deer", "Black Bear", "Fallow Deer",
+    "Moose", "Red Fox", "Ring-Necked Pheasant",
+}
+
+DIFFICULTY_NAMES = {
+    1: "Trivial",
+    2: "Minor",
+    3: "Very Easy",
+    4: "Easy",
+    5: "Medium",
+    6: "Hard",
+    7: "Very Hard",
+    8: "Mythical",
+    9: "Legendary",
+    10: "Fabled",
 }
 
 SPECIES_ALIASES = {
@@ -405,6 +538,109 @@ def _range_score(value, bounds):
     return max(0.0, 1.0 - (distance / width))
 
 
+def estimate_trophy_status(
+    species,
+    trophy_value,
+    weight_value,
+    reserve_id=None,
+    is_great_one=False,
+):
+    """Estimate species-capped difficulty level and medal from trophy value."""
+    try:
+        trophy_value = float(trophy_value) if trophy_value is not None else None
+        weight_value = float(weight_value) if weight_value is not None else None
+    except (TypeError, ValueError):
+        return "Unknown", "No"
+
+    metadata = SPECIES_METADATA.get(int(reserve_id), {}).get(species, {})
+    trophy_range = TROPHY_RATING_RANGES.get(species)
+    diamond_min = metadata.get("diamond_min")
+    if diamond_min is None and trophy_range is not None:
+        diamond_min = trophy_range[1] * 0.90
+    if diamond_min is None:
+        return "Unknown", "No"
+
+    maximum = trophy_range[1] if trophy_range else diamond_min
+    # Class-1 save scores are stored as grams, so weight is the useful signal.
+    if trophy_value is not None and trophy_value > maximum * 3:
+        ratio = (trophy_value / 1000.0) / max(maximum, 1.0)
+    elif trophy_value is not None:
+        ratio = trophy_value / max(maximum, 1.0)
+    else:
+        return "Unknown", "No"
+
+    max_level = metadata.get(
+        "max_level",
+        SPECIES_MAX_DIFFICULTY.get(species, 9),
+    )
+    if is_great_one and metadata.get("great_one", False):
+        return "10 (Fabled)", "No"
+    estimated_level = max(
+        1,
+        min(max_level, int((trophy_value or 0) / max(diamond_min, 1) * max_level)),
+    )
+    if trophy_value is not None and trophy_value >= diamond_min:
+        medal = "Diamond"
+        diamond = "Yes"
+    elif trophy_value is not None and trophy_value >= diamond_min * 0.667:
+        medal = "Gold"
+        diamond = "No"
+    elif trophy_value is not None and trophy_value >= diamond_min * 0.333:
+        medal = "Silver"
+        diamond = "No"
+    else:
+        medal = "Bronze"
+        diamond = "No"
+
+    difficulty_name = DIFFICULTY_NAMES[estimated_level]
+    return f"{estimated_level} ({difficulty_name}; max {max_level})", diamond
+
+
+def apex_seed_to_float(seed):
+    seed = int(seed) & 0xFFFFFFFF
+    state = (seed * 1664525 + 1013904223) & 0xFFFFFFFF
+    return (state >> 8) / 16777216.0
+
+
+def fur_type_from_record(record):
+    """Resolve explicit fur fields, then apply the generic COTW rare seed bands."""
+    for key, value in record.items():
+        if "fur" not in str(key).lower() and "variation" not in str(key).lower():
+            continue
+        text = str(value).lower()
+        if any(term in text for term in ("albino", "melanistic", "leucistic")):
+            return str(value)
+        if "piebald" in text:
+            return str(value)
+
+    seed = record.get("visual_variation_seed")
+    if seed is None:
+        seed = record.get("VisualVariationSeed")
+    if seed is None:
+        return "Unknown"
+    try:
+        normalized = apex_seed_to_float(seed)
+    except (TypeError, ValueError, OverflowError):
+        return "Unknown"
+    if normalized >= 0.9997:
+        return "Melanistic (V.Rare)"
+    if normalized >= 0.9992:
+        return "Albino (V.Rare)"
+    if normalized >= 0.9980:
+        return "Piebald (Rare)"
+    return "Common/Unresolved"
+
+
+def rare_fur_status(record):
+    """Return a seed-backed rare-fur result for any species."""
+    fur_type = fur_type_from_record(record)
+    if "Rare" in fur_type or "Albino" in fur_type or "Melanistic" in fur_type:
+        return fur_type
+    if fur_type == "Common/Unresolved":
+        return "No"
+    return fur_type
+
+
 def infer_species_from_attributes(matches, reserve_id):
     """Choose the reserve species best supported by linked weight/TR data."""
     candidates = list(RESERVE_SPECIES_NAMES.get(int(reserve_id), {}).values())
@@ -466,6 +702,18 @@ def infer_species_from_attributes(matches, reserve_id):
 
 def resolve_zone_species(row, matches, reserve_id):
     """Translate the selected need zone's reserve-local species ID."""
+    allowed_species = set(RESERVE_SPECIES_NAMES.get(int(reserve_id), {}).values())
+    reserve_hashes = RESERVE_HASH_SPECIES_OVERRIDES.get(int(reserve_id), {})
+    static_hashes = RESERVE_STATIC_NAME_HASHES.get(int(reserve_id), {})
+    for rec in matches:
+        record_hash = canonical_uint32(
+            rec.get("name_hash_id") or rec.get("NameHashId")
+        )
+        if record_hash in reserve_hashes:
+            return reserve_hashes[record_hash]
+        if record_hash in static_hashes:
+            return static_hashes[record_hash]
+
     need_type = canonical_uint32(row.get("NeedType"))
     override = RESERVE_NEED_SPECIES_OVERRIDES.get(int(reserve_id), {}).get(
         need_type
@@ -484,8 +732,14 @@ def resolve_zone_species(row, matches, reserve_id):
     if animal_type is not None and pd.notna(animal_type):
         animal_type_id = canonical_uint32(animal_type)
         if animal_type_id is not None:
-            resolved = ANIMAL_TYPE_HASH_NAMES.get(animal_type_id)
+            resolved = reserve_hashes.get(animal_type_id)
             if resolved:
+                return resolved
+            resolved = static_hashes.get(animal_type_id)
+            if resolved:
+                return resolved
+            resolved = ANIMAL_TYPE_HASH_NAMES.get(animal_type_id)
+            if resolved and (not allowed_species or resolved in allowed_species):
                 return resolved
 
             reserve_types = RESERVE_SPECIES_NAMES.get(int(reserve_id), {})
@@ -510,6 +764,18 @@ def resolve_zone_species(row, matches, reserve_id):
 
     # 2. Fall back to linked animal records (matches) if CSV lookup fails
     if not species_name and matches:
+        hash_species = []
+        for rec in matches:
+            record_hash = canonical_uint32(
+                rec.get("name_hash_id") or rec.get("NameHashId")
+            )
+            resolved = ANIMAL_TYPE_HASH_NAMES.get(record_hash)
+            if resolved and (not allowed_species or resolved in allowed_species):
+                hash_species.append(resolved)
+        if hash_species:
+            species_name = Counter(hash_species).most_common(1)[0][0]
+
+    if not species_name and matches:
         species_list = []
         for rec in matches:
             sp = (
@@ -533,10 +799,6 @@ def resolve_zone_species(row, matches, reserve_id):
 
     # 4. Final fallback
     if not species_name:
-        if animal_type is not None and pd.notna(animal_type):
-            animal_type_id = canonical_uint32(animal_type)
-            if animal_type_id is not None:
-                return f"Animal Type {animal_type_id}"
         return "Unknown Species"
 
     return species_name
@@ -720,10 +982,15 @@ class NeedZoneApp:
         )
         self.lbl_pos_info.pack(side=tk.TOP, anchor="w", pady=(0, 10))
 
+        self.lbl_zone_status = ttk.Label(
+            right_frame, text="", font=("Arial", 9, "bold")
+        )
+        self.lbl_zone_status.pack(side=tk.TOP, anchor="w", pady=(0, 10))
+
         tree_frame = ttk.Frame(right_frame)
         tree_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        columns = ("species", "gender", "score", "weight")
+        columns = ("species", "gender", "score", "weight", "level", "diamond", "rare")
         self.tree = ttk.Treeview(
             tree_frame, columns=columns, show="headings", selectmode="browse"
         )
@@ -731,11 +998,17 @@ class NeedZoneApp:
         self.tree.heading("gender", text="Gender")
         self.tree.heading("score", text="Score")
         self.tree.heading("weight", text="Weight (kg)")
+        self.tree.heading("level", text="Level")
+        self.tree.heading("diamond", text="Diamond")
+        self.tree.heading("rare", text="Fur type")
 
         self.tree.column("species", width=120, anchor="w")
         self.tree.column("gender", width=60, anchor="center")
         self.tree.column("score", width=60, anchor="e")
         self.tree.column("weight", width=80, anchor="e")
+        self.tree.column("level", width=105, anchor="center")
+        self.tree.column("diamond", width=65, anchor="center")
+        self.tree.column("rare", width=75, anchor="center")
 
         tree_scroll = ttk.Scrollbar(
             tree_frame, orient="vertical", command=self.tree.yview
@@ -858,6 +1131,18 @@ class NeedZoneApp:
 
         zone_species = resolve_zone_species(row, matches, reserve_id)
 
+        species_matches = []
+        for rec in matches:
+            record_species = resolve_zone_species(
+                {"AnimalTypeLocalizationName": rec.get("name_hash_id")},
+                [rec],
+                reserve_id,
+            )
+            if record_species == zone_species:
+                species_matches.append(rec)
+        if species_matches:
+            matches = species_matches
+
         self.lbl_zone_info.config(
             text=f"Zone ID: {zone_id} ({zone_species} {type_name})",
             font=("Arial", 11, "bold"),
@@ -867,10 +1152,18 @@ class NeedZoneApp:
             f"Animals linked: {len(matches)}"
         )
 
+        zone_status = ["Diamond present: No", "Rare fur: Unknown"]
+        self.lbl_zone_status.config(text=" | ".join(zone_status))
+
         for item in self.tree.get_children():
             self.tree.delete(item)
 
         for rec in matches:
+            record_species = resolve_zone_species(
+                {"AnimalTypeLocalizationName": rec.get("name_hash_id")},
+                [rec],
+                reserve_id,
+            )
             gender = rec.get("gender") or rec.get("gender_name") or "N/A"
 
             trophy_val = (
@@ -890,12 +1183,39 @@ class NeedZoneApp:
             weight_str = (
                 f"{float(weight_val):.1f}" if weight_val is not None else "N/A"
             )
+            level_str, diamond_str = estimate_trophy_status(
+                record_species,
+                trophy_val,
+                weight_val,
+                reserve_id=reserve_id,
+                is_great_one=bool(
+                    rec.get("is_great_one")
+                    or rec.get("IsGreatOne")
+                    or rec.get("is_fabled")
+                    or rec.get("IsFabled")
+                ),
+            )
+            rare_str = rare_fur_status(rec)
+            if diamond_str == "Yes":
+                zone_status[0] = "Diamond present: Yes"
+            if "Rare" in rare_str or "Albino" in rare_str or "Melanistic" in rare_str:
+                zone_status[1] = f"Rare fur: {rare_str}"
 
             self.tree.insert(
                 "",
                 tk.END,
-                values=(zone_species, gender, trophy_str, weight_str),
+                values=(
+                    record_species,
+                    gender,
+                    trophy_str,
+                    weight_str,
+                    level_str,
+                    diamond_str,
+                    rare_str,
+                ),
             )
+
+        self.lbl_zone_status.config(text=" | ".join(zone_status))
 
     def on_click(self, event):
         if self.toolbar.mode != "" or event.inaxes != self.ax:
@@ -918,6 +1238,23 @@ class NeedZoneApp:
 def load_zone_animal_lookup():
     lookup = {}
     readable_dir = Path(r"C:\Users\gills\Results_readable")
+    report_species = {}
+
+    if SPECIES_HASH_REPORT.exists():
+        try:
+            with SPECIES_HASH_REPORT.open("r", encoding="utf-8") as f:
+                report = json.load(f)
+            for hash_text, details in report.items():
+                species = details.get("assigned_species")
+                if not species:
+                    continue
+                try:
+                    animal_hash = int(str(hash_text).strip().removeprefix("0x"), 16)
+                except (TypeError, ValueError):
+                    continue
+                report_species[animal_hash & 0xFFFFFFFF] = str(species)
+        except (OSError, json.JSONDecodeError) as e:
+            print(f"Warning: Could not load {SPECIES_HASH_REPORT}: {e}")
 
     def learn_species_hash(animal):
         animal_hash = canonical_uint32(
@@ -930,7 +1267,10 @@ def load_zone_animal_lookup():
         )
         if animal_hash is not None and species:
             species = str(species)
-            if not species.startswith("Animal Type"):
+            if (
+                not species.startswith("Animal Type")
+                and not re.fullmatch(r"(?:0x)?[0-9a-fA-F]{8}", species)
+            ):
                 ANIMAL_TYPE_HASH_NAMES[animal_hash] = species
 
     parsed_files = [
@@ -990,7 +1330,37 @@ def load_zone_animal_lookup():
         except Exception as e:
             print(f"Warning: Could not load {ANIMAL_FILE}: {e}")
 
+    ANIMAL_TYPE_HASH_NAMES.update(report_species)
+    ANIMAL_TYPE_HASH_NAMES.update(VERIFIED_HASH_SPECIES_OVERRIDES)
     return lookup
+
+
+def load_static_reserve_catalog():
+    if not STATIC_ANIMAL_CATALOG.exists():
+        return
+    try:
+        with STATIC_ANIMAL_CATALOG.open("r", encoding="utf-8") as f:
+            catalog = json.load(f)
+        hashes_by_species = {}
+        for item in catalog.get("animal_name_hashes", []):
+            ANIMAL_TYPE_HASH_NAMES[item["hash32"]] = item["species"]
+            hashes_by_species.setdefault(item["species"], []).append(
+                item["hash32"]
+            )
+        for reserve_id, reserve in catalog.get("reserves", {}).items():
+            names = [animal["name"] for animal in reserve.get("animals", [])]
+            if names:
+                existing = RESERVE_SPECIES_NAMES.setdefault(int(reserve_id), {})
+                reserve_hashes = RESERVE_STATIC_NAME_HASHES.setdefault(
+                    int(reserve_id), {}
+                )
+                for index, name in enumerate(names):
+                    if name not in existing.values():
+                        existing[-(index + 1)] = name
+                    for animal_hash in hashes_by_species.get(name, []):
+                        reserve_hashes[animal_hash] = name
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"Warning: Could not load {STATIC_ANIMAL_CATALOG}: {e}")
 
 
 def canonical_uint32(value):
@@ -1002,7 +1372,12 @@ def canonical_uint32(value):
             value = value.strip()
             if not value:
                 return None
-            value = int(value, 0)
+            if value.lower().startswith("0x"):
+                value = int(value, 16)
+            elif any(character in "abcdefABCDEF" for character in value):
+                value = int(value, 16)
+            else:
+                value = int(value, 10)
         return int(value) & 0xFFFFFFFF
     except (TypeError, ValueError, OverflowError):
         return None
@@ -1014,6 +1389,17 @@ def main():
         return
 
     df = pd.read_csv(ZONE_FILE)
+    if MASTER_ZONE_FILE.exists():
+        try:
+            master_df = pd.read_csv(MASTER_ZONE_FILE)
+            df = pd.concat([df, master_df], ignore_index=True)
+            df = df.drop_duplicates(
+                subset=["ReserveId", "NeedZoneId", "NeedType"],
+                keep="first",
+            )
+            print(f"Loaded master need zones: {MASTER_ZONE_FILE}")
+        except (OSError, pd.errors.ParserError) as e:
+            print(f"Warning: Could not load {MASTER_ZONE_FILE}: {e}")
     df["ReserveId"] = pd.to_numeric(df["ReserveId"], errors="coerce").astype(
         "Int64"
     )
@@ -1033,6 +1419,7 @@ def main():
         ]
     ).copy()
 
+    load_static_reserve_catalog()
     animal_lookup = load_zone_animal_lookup()
 
     root = tk.Tk()

@@ -5,6 +5,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import queue
+import re
 import threading
 import tkinter as tk
 from tkinter import ttk
@@ -13,6 +14,8 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 STEPS = (
+    "Build_COTW_Archive_Index.py",
+    "Extract_Static_COTW_Catalog.py",
     "Animal_pop_decode.py",
     "ADF_Reader.py",
     "ADF_Reader_Need_Zone.py",
@@ -35,7 +38,7 @@ class LoadingWindow:
         )
 
         root.title("COTW Tracker")
-        root.geometry("420x190")
+        root.geometry("520x230")
         root.resizable(False, False)
         root.protocol("WM_DELETE_WINDOW", self._close)
 
@@ -54,6 +57,15 @@ class LoadingWindow:
         self.spinner_label.pack()
         self.status_label = ttk.Label(frame, text="Starting...", anchor="center")
         self.status_label.pack(fill="x", pady=(10, 0))
+        self.progress_bar = ttk.Progressbar(
+            frame,
+            orient="horizontal",
+            mode="determinate",
+            maximum=100,
+        )
+        self.progress_bar.pack(fill="x", pady=(14, 0))
+        self.progress_label = ttk.Label(frame, text="0%", anchor="center")
+        self.progress_label.pack(pady=(5, 0))
 
         self._animate_spinner()
         self._poll_events()
@@ -76,15 +88,50 @@ class LoadingWindow:
                 self.events.put(
                     ("status", f"Step {number}/{len(STEPS)}: {script_name}")
                 )
-                result = subprocess.run(
+                self.events.put(
+                    ("progress", ((number - 1) / len(PRE_MAPPER_STEPS)) * 100)
+                )
+                process = subprocess.Popen(
                     [sys.executable, str(script_path)],
                     cwd=SCRIPT_DIR,
-                    check=False,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    text=True,
+                    bufsize=1,
                 )
-                if result.returncode != 0:
+                if process.stdout is not None:
+                    for output_line in process.stdout:
+                        output_line = output_line.strip()
+                        if not output_line:
+                            continue
+                        print(f"[{script_name}] {output_line}", flush=True)
+                        progress_match = re.search(
+                            r"Completed\s+(\d+)\s+of\s+(\d+)",
+                            output_line,
+                            re.IGNORECASE,
+                        )
+                        if progress_match:
+                            completed = int(progress_match.group(1))
+                            total = int(progress_match.group(2))
+                            fraction = completed / total if total else 0
+                            progress = (
+                                (number - 1 + fraction)
+                                / len(PRE_MAPPER_STEPS)
+                                * 100
+                            )
+                            self.events.put(("progress", progress))
+                        self.events.put(
+                            ("status", f"{script_name}: {output_line[-75:]}")
+                        )
+
+                return_code = process.wait()
+                if return_code != 0:
                     raise RuntimeError(
-                        f"{script_name} failed with exit code {result.returncode}"
+                        f"{script_name} failed with exit code {return_code}"
                     )
+                self.events.put(
+                    ("progress", (number / len(PRE_MAPPER_STEPS)) * 100)
+                )
 
             self.events.put(("complete", None))
         except Exception as exc:
@@ -96,6 +143,10 @@ class LoadingWindow:
                 event, value = self.events.get_nowait()
                 if event == "status":
                     self.status_label.configure(text=str(value))
+                elif event == "progress":
+                    progress = max(0.0, min(100.0, float(value)))
+                    self.progress_bar.configure(value=progress)
+                    self.progress_label.configure(text=f"{progress:.1f}%")
                 elif event == "complete":
                     self._launch_mapper()
                     return

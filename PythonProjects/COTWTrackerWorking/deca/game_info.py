@@ -690,6 +690,9 @@ def determine_game(game_dir, exe_name):
     # else:
     #     pass
     #
+    if game_info is None and exe_name.lower() == 'thehuntercotw_f.exe':
+        return GameInfoTHCOTW(game_dir, exe_name)
+
     return game_info
 
 
@@ -704,6 +707,9 @@ def game_info_load(project_file):
     game_info = determine_game_info(game_dir, exe_name, game_id=game_id)
     if game_info is not None:
         return game_info
+
+    if game_id == 'hp' and settings['exe_name'].lower() == 'thehuntercotw_f.exe':
+        return GameInfoTHCOTW(game_dir, settings['exe_name'])
 
     raise NotImplementedError()
 

@@ -1009,7 +1009,7 @@ class VfsDatabase(DbBase):
                 (s,),
                 dbg='object_info_add_many:0:select')
 
-            str_lookup[s] = result[0][0]
+            str_lookup[s] = result[0][0] if result else None
 
         str_lookup[None] = None
 
@@ -1033,7 +1033,7 @@ class VfsDatabase(DbBase):
                 "SELECT rowid FROM core_objects WHERE node_id_src=(?) AND offset=(?)",
                 (src_node_id, offset),
                 dbg='object_info_add_many:2:select')
-            obj_rowids[uid] = result[0][0]
+            obj_rowids[uid] = result[0][0] if result else None
 
         return obj_rowids
 
