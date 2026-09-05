@@ -22,10 +22,22 @@ def merge_need_zone_master(source_csv_path, master_csv_path):
       existing_rows = list(existing_reader)
 
   merged = {}
-  key_fields = ('ReserveId', 'NeedZoneId', 'NeedType')
+  # Species can share a single physical need zone (same ReserveId +
+  # NeedZoneId + NeedType) on different schedule slots. Include the
+  # AnimalTypeLocalizationName and NeedZoneScheduleIndex so co-located
+  # records for different species / time windows are kept as distinct rows.
+  key_fields = (
+    'ReserveId',
+    'NeedZoneId',
+    'NeedType',
+    'AnimalTypeLocalizationName',
+    'NeedZoneScheduleIndex',
+  )
   for row in existing_rows + source_rows:
     key = tuple(row.get(field, '') for field in key_fields)
-    if all(key):
+    # Allow rows missing the new slot columns (older caches) to merge on the
+    # core identity instead of being dropped by the all(key) guard.
+    if all(key[:3]):
       merged[key] = {field: row.get(field, '') for field in fieldnames}
 
   master_path.parent.mkdir(parents=True, exist_ok=True)
@@ -38,6 +50,8 @@ def merge_need_zone_master(source_csv_path, master_csv_path):
         int(row['ReserveId']) if row['ReserveId'].lstrip('-').isdigit() else 0,
         row['NeedZoneId'],
         row['NeedType'],
+        int(row['NeedZoneScheduleIndex'])
+        if row['NeedZoneScheduleIndex'].lstrip('-').isdigit() else 0,
       ),
     ))
   return len(merged)

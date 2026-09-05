@@ -371,6 +371,11 @@ RESERVE_HASH_SPECIES_OVERRIDES = {
 
 RESERVE_STATIC_NAME_HASHES = {}
 
+# Per-reserve cache for animal-record name_hash_id -> species. Keyed by
+# (reserve_id, hash) so a resolution made on one reserve (or one slot of a
+# shared need zone) can never leak the wrong species onto another record.
+RECORD_HASH_SPECIES_CACHE = {}
+
 # Trophy-rating ranges from the COTW Rating table.  They are used together
 # with weight ranges to identify otherwise unknown animal type hashes.
 TROPHY_RATING_RANGES = {
@@ -864,6 +869,76 @@ def resolve_zone_species(row, matches, reserve_id):
     return species_name
 
 
+def resolve_record_species(rec, zone_species, reserve_id, zone_guid_species=None):
+    """Resolve a single linked animal record's species.
+
+    The global ``ANIMAL_TYPE_HASH_NAMES`` table is keyed by ``name_hash_id``,
+    but those hashes are NOT unique across reserves (the same hash means
+    'Axis Deer' on one reserve and labels a Black Bear on another), and many
+    record hashes appear in no table at all. The only reliable per-reserve
+    species source is the need-zone CSV's ``AnimalTypeLocalizationName``.
+
+    Resolution order:
+    1. The species of the decoded zone the record is standing in
+       (``zone_guid_species``), which is authoritative per reserve.
+    2. The explicitly-provided ``zone_species`` (the zone being displayed).
+    3. Reserve-scoped override / static-hash tables.
+    4. The global hash table, only when its name is valid on THIS reserve.
+    5. Weight / trophy attribute inference as a last resort.
+
+    Resolutions are cached per (reserve, hash) so identical records stay
+    consistent within a reserve without leaking across reserves.
+    """
+    reserve_id_int = int(reserve_id) if reserve_id is not None else None
+    record_hash = canonical_uint32(
+        rec.get("name_hash_id") or rec.get("NameHashId")
+    )
+
+    cache_key = (reserve_id_int, record_hash)
+    if record_hash is not None and cache_key in RECORD_HASH_SPECIES_CACHE:
+        return RECORD_HASH_SPECIES_CACHE[cache_key]
+
+    resolved = None
+
+    # 1. Species of the decoded zone(s) this record occupies.
+    if zone_guid_species:
+        for z in rec.get("_extracted_zones", []) or []:
+            zid = canonical_uint32(z)
+            if zid in zone_guid_species:
+                resolved = normalize_species_for_reserve(
+                    zone_guid_species[zid], reserve_id_int
+                )
+                if resolved:
+                    break
+
+    # 2. The zone currently being displayed.
+    if not resolved and zone_species and zone_species != "Unknown Species":
+        resolved = normalize_species_for_reserve(zone_species, reserve_id_int)
+
+    if not resolved and record_hash is not None:
+        # 3. Reserve-scoped override / static tables.
+        reserve_hashes = RESERVE_HASH_SPECIES_OVERRIDES.get(reserve_id_int, {})
+        static_hashes = RESERVE_STATIC_NAME_HASHES.get(reserve_id_int, {})
+        raw = reserve_hashes.get(record_hash) or static_hashes.get(record_hash)
+        resolved = normalize_species_for_reserve(raw, reserve_id_int)
+        # 4. Global table, only when valid on THIS reserve.
+        if not resolved:
+            resolved = normalize_species_for_reserve(
+                ANIMAL_TYPE_HASH_NAMES.get(record_hash), reserve_id_int
+            )
+
+    # 5. Last resort: infer from this record's weight / trophy attributes.
+    if not resolved:
+        resolved = infer_species_from_attributes([rec], reserve_id_int)
+
+    if not resolved:
+        return "Unknown Species"
+
+    if record_hash is not None:
+        RECORD_HASH_SPECIES_CACHE[(reserve_id_int, record_hash)] = resolved
+    return resolved
+
+
 def extract_animals_from_json(data, default_reserve_id=None):
     """Recursively traverses JSON nodes to extract animal records and propagate
 
@@ -980,6 +1055,26 @@ class NeedZoneApp:
         self.df = df
         self.animal_lookup = animal_lookup
 
+        # Per-reserve map of need-zone GUID -> species, built from the zone
+        # CSV's authoritative AnimalTypeLocalizationName. This is the only
+        # species source that is reliable per reserve (animal-record
+        # name_hash_id values collide across reserves), so it is the primary
+        # signal for resolving which species an animal record belongs to.
+        self.zone_guid_species = {}
+        for (res_id, zone_id), zgroup in self.df.groupby(
+            ["ReserveId", "NeedZoneId"]
+        ):
+            zid = canonical_uint32(zone_id)
+            if zid is None:
+                continue
+            species = resolve_zone_species(
+                zgroup.iloc[0].to_dict(), [], res_id
+            )
+            if species and species != "Unknown Species":
+                self.zone_guid_species.setdefault(int(res_id), {})[zid] = (
+                    species
+                )
+
         # Top Control Bar
         control_frame = ttk.Frame(self.root, padding=10)
         control_frame.pack(side=tk.TOP, fill=tk.X)
@@ -1010,6 +1105,39 @@ class NeedZoneApp:
 
         paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         paned.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        # --- Left species navigation sidebar ---
+        nav_frame = ttk.LabelFrame(paned, text=" Species ", padding=(6, 6))
+        paned.add(nav_frame, weight=0)
+
+        # Species buttons (the "widgets") live at the top of the sidebar.
+        self.species_button_frame = ttk.Frame(nav_frame)
+        self.species_button_frame.pack(side=tk.TOP, fill=tk.X)
+
+        ttk.Label(
+            nav_frame,
+            text="Animals (high → low level)",
+            font=("Arial", 9, "bold"),
+        ).pack(side=tk.TOP, anchor="w", pady=(8, 2))
+
+        # Scrollable animal listbox below the species buttons.
+        list_container = ttk.Frame(nav_frame)
+        list_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.animal_list = tk.Listbox(
+            list_container,
+            font=("Consolas", 9),
+            activestyle="none",
+            exportselection=False,
+            width=30,
+        )
+        list_scroll = ttk.Scrollbar(
+            list_container, orient="vertical", command=self.animal_list.yview
+        )
+        self.animal_list.configure(yscrollcommand=list_scroll.set)
+        self.animal_list.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
+        self.animal_list.bind("<<ListboxSelect>>", self.on_animal_nav_select)
+        self._nav_records = []  # records backing the current listbox rows
 
         left_frame = ttk.Frame(paned)
         paned.add(left_frame, weight=3)
@@ -1083,9 +1211,185 @@ class NeedZoneApp:
 
         self.canvas.mpl_connect("button_press_event", self.on_click)
         self.update_plot()
+        self.refresh_species_nav()
 
     def on_reserve_change(self, event):
         self.update_plot()
+        self.refresh_species_nav()
+
+    def _current_reserve_animals(self):
+        """All linked animal records for the currently selected reserve."""
+        selected_label = self.dropdown.get()
+        rid = self.reserve_map.get(selected_label)
+        if rid is None:
+            return None, []
+        rid_key = canonical_uint32(rid)
+        records = []
+        seen = set()
+        for (res_id, _zone_id), animals in self.animal_lookup.items():
+            if res_id != rid_key:
+                continue
+            for rec in animals:
+                if id(rec) not in seen:
+                    seen.add(id(rec))
+                    records.append(rec)
+        return rid, records
+
+    def _animal_level_info(self, rec, reserve_id, species):
+        """Return (sort_level, level_text) for an animal record."""
+        trophy_val = (
+            rec.get("score")
+            or rec.get("trophy_score")
+            or rec.get("trophy_rating")
+        )
+        weight_val = (
+            rec.get("weight_kg") or rec.get("weight") or rec.get("body_weight")
+        )
+        level_str, _diamond = estimate_trophy_status(
+            species,
+            trophy_val,
+            weight_val,
+            reserve_id=reserve_id,
+            is_great_one=bool(
+                rec.get("is_great_one")
+                or rec.get("IsGreatOne")
+                or rec.get("is_fabled")
+                or rec.get("IsFabled")
+            ),
+        )
+        # Leading integer of "N (Name; max M)" drives the high→low sort.
+        try:
+            sort_level = int(str(level_str).split(" ", 1)[0])
+        except (ValueError, IndexError):
+            sort_level = -1
+        return sort_level, level_str
+
+    def refresh_species_nav(self):
+        """Rebuild the species buttons for the selected reserve."""
+        for widget in self.species_button_frame.winfo_children():
+            widget.destroy()
+        self.animal_list.delete(0, tk.END)
+        self._nav_records = []
+
+        rid, records = self._current_reserve_animals()
+        if rid is None:
+            return
+
+        # Group records by resolved species, preserving metadata order.
+        guid_map = self.zone_guid_species.get(int(rid), {})
+        species_groups = {}
+        for rec in records:
+            species = resolve_record_species(rec, None, rid, guid_map)
+            species_groups.setdefault(species, []).append(rec)
+
+        ordered = [s for s in metadata_species_for_reserve(rid)
+                   if s in species_groups]
+        ordered += sorted(s for s in species_groups if s not in ordered)
+
+        if not ordered:
+            ttk.Label(
+                self.species_button_frame,
+                text="No animals decoded.",
+                font=("Arial", 9, "italic"),
+            ).pack(anchor="w")
+            return
+
+        for species in ordered:
+            count = len(species_groups[species])
+            btn = ttk.Button(
+                self.species_button_frame,
+                text=f"{species} ({count})",
+                command=lambda s=species: self.show_species_animals(s),
+            )
+            btn.pack(side=tk.TOP, fill=tk.X, pady=1)
+
+        # Auto-select the first species so the list is populated.
+        self.show_species_animals(ordered[0])
+
+    def show_species_animals(self, species):
+        """Fill the animal listbox with one species, sorted high→low level."""
+        self.animal_list.delete(0, tk.END)
+        self._nav_records = []
+
+        rid, records = self._current_reserve_animals()
+        if rid is None:
+            return
+
+        entries = []
+        guid_map = self.zone_guid_species.get(int(rid), {})
+        for rec in records:
+            rec_species = resolve_record_species(rec, None, rid, guid_map)
+            if rec_species != species:
+                continue
+            sort_level, level_str = self._animal_level_info(rec, rid, species)
+            entries.append((sort_level, level_str, rec))
+
+        # Highest level first; ties broken by descending score.
+        def _score(rec):
+            try:
+                return float(
+                    rec.get("score")
+                    or rec.get("trophy_score")
+                    or rec.get("trophy_rating")
+                    or 0
+                )
+            except (TypeError, ValueError):
+                return 0.0
+
+        entries.sort(key=lambda e: (e[0], _score(e[2])), reverse=True)
+
+        for sort_level, level_str, rec in entries:
+            gender = rec.get("gender") or rec.get("gender_name") or "?"
+            gender_char = str(gender)[0].upper() if gender else "?"
+            weight_val = (
+                rec.get("weight_kg") or rec.get("weight")
+                or rec.get("body_weight")
+            )
+            try:
+                weight_str = f"{float(weight_val):.0f}kg"
+            except (TypeError, ValueError):
+                weight_str = "  ?kg"
+            level_num = level_str.split(" ", 1)[0]
+            self.animal_list.insert(
+                tk.END, f"L{level_num:<2} {gender_char} {weight_str:>6}"
+            )
+            self._nav_records.append(rec)
+
+    def on_animal_nav_select(self, event):
+        """Clicking an animal in the sidebar highlights its zone details."""
+        selection = self.animal_list.curselection()
+        if not selection:
+            return
+        rec = self._nav_records[selection[0]]
+        rid, _records = self._current_reserve_animals()
+        if rid is None:
+            return
+
+        # Prefer the record's own zone list; fall back to its map position.
+        zone_ids = rec.get("_extracted_zones") or []
+        target = None
+        if zone_ids:
+            zid = canonical_uint32(zone_ids[0])
+            rows = self.df[
+                (self.df["ReserveId"] == rid)
+                & (self.df["NeedZoneId"].apply(canonical_uint32) == zid)
+            ]
+            if not rows.empty:
+                target = rows.iloc[0].to_dict()
+        if target is None:
+            pos = rec.get("map_position") or {}
+            px = pos.get("x") or pos.get("X")
+            pz = pos.get("z") or pos.get("Z")
+            if px is not None and pz is not None:
+                rows = self.df[
+                    (self.df["ReserveId"] == rid)
+                    & (self.df["Position_X"].round(0) == round(float(px)))
+                    & (self.df["Position_Z"].round(0) == round(float(pz)))
+                ]
+                if not rows.empty:
+                    target = rows.iloc[0].to_dict()
+        if target is not None:
+            self.display_zone_details(target)
 
     def update_plot(self):
         self.ax.clear()
@@ -1138,6 +1442,21 @@ class NeedZoneApp:
                 zorder=0,
             )
 
+        # Flag shared need zones: same reserve/need-type/position used by
+        # more than one species. Distinct zones are never closer than ~64 m
+        # apart in the data, so meter-level position matching is safe.
+        shared_keys = set()
+        for (nt, rx, rz), g in sub_df.groupby(
+            [
+                sub_df["NeedType"],
+                sub_df["Position_X"].round(0),
+                sub_df["Position_Z"].round(0),
+            ]
+        ):
+            if g["AnimalTypeLocalizationName"].nunique() > 1:
+                shared_keys.add((nt, rx, rz))
+
+        shared_ring_labelled = False
         for need_type, meta in NEED_TYPES.items():
             type_df = sub_df[sub_df["NeedType"] == need_type]
             if type_df.empty:
@@ -1158,6 +1477,29 @@ class NeedZoneApp:
             )
             self.scatter_collections.append(sc)
             self.scatter_data_map[sc] = type_df.to_dict("records")
+
+            # Ring the spots shared by multiple species.
+            if shared_keys:
+                row_keys = zip(
+                    type_df["NeedType"],
+                    type_df["Position_X"].round(0),
+                    type_df["Position_Z"].round(0),
+                )
+                shared_df = type_df[
+                    [key in shared_keys for key in row_keys]
+                ]
+                if not shared_df.empty:
+                    self.ax.scatter(
+                        shared_df["Plot_X"],
+                        shared_df["Plot_Z"],
+                        facecolors="none",
+                        edgecolors="gold",
+                        s=160,
+                        linewidths=1.6,
+                        zorder=3,
+                        label=None if shared_ring_labelled else "Shared Zone",
+                    )
+                    shared_ring_labelled = True
 
         self.ax.set_xlim(left, right)
         self.ax.set_ylim(bottom, top)
@@ -1189,22 +1531,122 @@ class NeedZoneApp:
             (canonical_uint32(reserve_id), canonical_uint32(zone_id)), []
         )
 
-        zone_species = resolve_zone_species(row, matches, reserve_id)
+        # Species can share a single physical need zone. The save stores one
+        # record per species/schedule slot, and shared zones sit at identical
+        # coordinates with the same need type (measured distinct zones are
+        # never closer than ~64 m apart, so meter-level position matching is
+        # a safe sharing signal that does not merge merely-nearby zones).
+        # Collect every record at this spot, regardless of NeedZoneId, so we
+        # can list each species together with its active time window.
+        pos_x = round(float(row["Position_X"]))
+        pos_z = round(float(row["Position_Z"]))
+        cluster = self.df[
+            (self.df["ReserveId"] == reserve_id)
+            & (self.df["NeedType"] == need_type_id)
+            & (self.df["Position_X"].round(0) == pos_x)
+            & (self.df["Position_Z"].round(0) == pos_z)
+        ]
+        zone_rows = cluster.to_dict("records") if not cluster.empty else [row]
 
-        species_matches = []
-        for rec in matches:
-            record_species = resolve_zone_species(
-                {"AnimalTypeLocalizationName": rec.get("name_hash_id")},
-                [rec],
-                reserve_id,
+        # Union the animal links across every zone id registered at this spot.
+        matches = []
+        seen_records = set()
+        for zr in zone_rows:
+            try:
+                cid = int(zr["NeedZoneId"])
+            except (TypeError, ValueError):
+                continue
+            for rec in self.animal_lookup.get(
+                (canonical_uint32(reserve_id), canonical_uint32(cid)), []
+            ):
+                if id(rec) not in seen_records:
+                    seen_records.add(id(rec))
+                    matches.append(rec)
+
+        def _fmt_time(value):
+            try:
+                hour = float(value)
+                return f"{hour:04.1f}"
+            except (TypeError, ValueError):
+                return "?"
+
+        # Build an ordered list of (species, time window, schedule index)
+        # preserving the first-seen order in the data.
+        species_slots = []
+        seen_slots = set()
+        for zrow in zone_rows:
+            species = resolve_zone_species(zrow, matches, reserve_id)
+            start = _fmt_time(zrow.get("NeedZoneStartTimeHours"))
+            end = _fmt_time(zrow.get("NeedZoneEndTimeHours"))
+            sched = zrow.get("NeedZoneScheduleIndex")
+            slot_key = (species, start, end)
+            if slot_key in seen_slots:
+                continue
+            seen_slots.add(slot_key)
+            label = f"{species} {start}–{end}h"
+            if sched is not None and str(sched) not in ("", "nan"):
+                label += f" (slot {sched})"
+            species_slots.append((species, label))
+
+        zone_species = species_slots[0][0] if species_slots else "Unknown Species"
+
+        # Map each zone id in this cluster to its own authoritative CSV
+        # species. In a shared zone, an animal linked to the Whitetail zone id
+        # must resolve as Whitetail, not as the first slot's species.
+        zone_id_species = {}
+        for zr in zone_rows:
+            try:
+                cid = canonical_uint32(int(zr["NeedZoneId"]))
+            except (TypeError, ValueError):
+                continue
+            if cid is not None and cid not in zone_id_species:
+                zone_id_species[cid] = resolve_zone_species(zr, matches, reserve_id)
+
+        def species_for_record(rec):
+            """Species for one linked record, keyed by its own zone."""
+            guid_map = self.zone_guid_species.get(int(reserve_id), {})
+            for z in rec.get("_extracted_zones", []):
+                zid = canonical_uint32(z)
+                if zid in zone_id_species:
+                    return resolve_record_species(
+                        rec, zone_id_species[zid], reserve_id, guid_map
+                    )
+            return resolve_record_species(rec, zone_species, reserve_id, guid_map)
+
+        # Shared spots list every linked animal (the tree resolves each
+        # record's species individually); single-species zones keep the legacy
+        # filter that drops mismatched linked records.
+        if len(species_slots) <= 1:
+            species_matches = []
+            guid_map = self.zone_guid_species.get(int(reserve_id), {})
+            for rec in matches:
+                record_species = resolve_record_species(
+                    rec, zone_species, reserve_id, guid_map
+                )
+                if record_species == zone_species:
+                    species_matches.append(rec)
+            if zone_species != "Unknown Species":
+                matches = species_matches
+
+        if len(species_slots) > 1:
+            zone_ids = sorted(
+                {
+                    int(zr["NeedZoneId"])
+                    for zr in zone_rows
+                    if str(zr.get("NeedZoneId", "")).strip() not in ("", "nan")
+                }
             )
-            if record_species == zone_species:
-                species_matches.append(rec)
-        if zone_species != "Unknown Species":
-            matches = species_matches
+            zone_title = (
+                f"Shared Zone ({type_name}) — IDs: "
+                + ", ".join(str(z) for z in zone_ids)
+                + "\n"
+                + ", ".join(label for _, label in species_slots)
+            )
+        else:
+            zone_title = f"Zone ID: {zone_id} ({zone_species} {type_name})"
 
         self.lbl_zone_info.config(
-            text=f"Zone ID: {zone_id} ({zone_species} {type_name})",
+            text=zone_title,
             font=("Arial", 11, "bold"),
         )
         self.lbl_pos_info.config(
@@ -1219,11 +1661,7 @@ class NeedZoneApp:
             self.tree.delete(item)
 
         for rec in matches:
-            record_species = resolve_zone_species(
-                {"AnimalTypeLocalizationName": rec.get("name_hash_id")},
-                [rec],
-                reserve_id,
-            )
+            record_species = species_for_record(rec)
             gender = rec.get("gender") or rec.get("gender_name") or "N/A"
 
             trophy_val = (
@@ -1453,8 +1891,20 @@ def main():
         try:
             master_df = pd.read_csv(MASTER_ZONE_FILE)
             df = pd.concat([df, master_df], ignore_index=True)
+            # Species can share a single physical need zone (same ReserveId +
+            # NeedZoneId + NeedType) on different schedule slots. Only treat a
+            # row as a duplicate when the species and schedule slot also match,
+            # so co-located zones for different species/time windows survive.
+            dedup_cols = [
+                "ReserveId",
+                "NeedZoneId",
+                "NeedType",
+                "AnimalTypeLocalizationName",
+                "NeedZoneScheduleIndex",
+            ]
+            dedup_cols = [c for c in dedup_cols if c in df.columns]
             df = df.drop_duplicates(
-                subset=["ReserveId", "NeedZoneId", "NeedType"],
+                subset=dedup_cols,
                 keep="first",
             )
             print(f"Loaded master need zones: {MASTER_ZONE_FILE}")
