@@ -20,6 +20,45 @@ from PIL import Image, ImageDraw
 from ADF_Reader import GLOBAL_SPECIES_PROFILES
 from species_metadata import SPECIES_METADATA
 
+
+SPECIES_METADATA_ALIASES = {
+    "Brown Bear": "Eurasian Brown Bear",
+    "Reindeer": "Mountain Reindeer",
+    "Musk Deer": "Siberian Musk Deer",
+    "Caribou": "Grant Caribou",
+    "Wild Turkey": "Merriam Turkey",
+    "Northern Bobwhite Quail": "Bobwhite Quail",
+    "Eastern Grey Kangaroo": "Eastern Gray Kangaroo",
+    "Green-winged Teal": "Green Winged Teal",
+    "Merriam's Turkey": "Merriam Turkey",
+}
+
+
+def metadata_species_for_reserve(reserve_id):
+    return SPECIES_METADATA.get(int(reserve_id), {})
+
+
+def normalize_species_for_reserve(species, reserve_id):
+    if not species:
+        return None
+    allowed = metadata_species_for_reserve(reserve_id)
+    species = str(species).strip()
+    if species in allowed:
+        return species
+
+    alias = SPECIES_METADATA_ALIASES.get(species)
+    if alias in allowed:
+        return alias
+
+    normalized = re.sub(r"[^a-z0-9]", "", species.lower())
+    matches = [
+        name for name in allowed
+        if re.sub(r"[^a-z0-9]", "", name.lower()) == normalized
+    ]
+    if len(matches) == 1:
+        return matches[0]
+    return None
+
 # --- File Paths ---
 ZONE_FILE = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedNeedZoneData\need_zones.csv")
 ANIMAL_FILE = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedADFJSONFormat\all_animals.json")
@@ -643,7 +682,7 @@ def rare_fur_status(record):
 
 def infer_species_from_attributes(matches, reserve_id):
     """Choose the reserve species best supported by linked weight/TR data."""
-    candidates = list(RESERVE_SPECIES_NAMES.get(int(reserve_id), {}).values())
+    candidates = list(metadata_species_for_reserve(reserve_id))
     if not candidates:
         candidates = list(GLOBAL_SPECIES_PROFILES)
 
@@ -702,7 +741,7 @@ def infer_species_from_attributes(matches, reserve_id):
 
 def resolve_zone_species(row, matches, reserve_id):
     """Translate the selected need zone's reserve-local species ID."""
-    allowed_species = set(RESERVE_SPECIES_NAMES.get(int(reserve_id), {}).values())
+    allowed_species = metadata_species_for_reserve(reserve_id)
     reserve_hashes = RESERVE_HASH_SPECIES_OVERRIDES.get(int(reserve_id), {})
     static_hashes = RESERVE_STATIC_NAME_HASHES.get(int(reserve_id), {})
     for rec in matches:
@@ -710,9 +749,17 @@ def resolve_zone_species(row, matches, reserve_id):
             rec.get("name_hash_id") or rec.get("NameHashId")
         )
         if record_hash in reserve_hashes:
-            return reserve_hashes[record_hash]
+            resolved = normalize_species_for_reserve(
+                reserve_hashes[record_hash], reserve_id
+            )
+            if resolved:
+                return resolved
         if record_hash in static_hashes:
-            return static_hashes[record_hash]
+            resolved = normalize_species_for_reserve(
+                static_hashes[record_hash], reserve_id
+            )
+            if resolved:
+                return resolved
 
     need_type = canonical_uint32(row.get("NeedType"))
     override = RESERVE_NEED_SPECIES_OVERRIDES.get(int(reserve_id), {}).get(
@@ -720,9 +767,11 @@ def resolve_zone_species(row, matches, reserve_id):
     )
     if override:
         animal_type_id = canonical_uint32(row.get("AnimalTypeLocalizationName"))
-        if animal_type_id is not None:
+        override = normalize_species_for_reserve(override, reserve_id)
+        if override and animal_type_id is not None:
             ANIMAL_TYPE_HASH_NAMES[animal_type_id] = override
-        return override
+        if override:
+            return override
 
     species_name = None
     animal_type_id = None
@@ -734,18 +783,26 @@ def resolve_zone_species(row, matches, reserve_id):
         if animal_type_id is not None:
             resolved = reserve_hashes.get(animal_type_id)
             if resolved:
-                return resolved
+                resolved = normalize_species_for_reserve(resolved, reserve_id)
+                if resolved:
+                    return resolved
             resolved = static_hashes.get(animal_type_id)
             if resolved:
-                return resolved
+                resolved = normalize_species_for_reserve(resolved, reserve_id)
+                if resolved:
+                    return resolved
             resolved = ANIMAL_TYPE_HASH_NAMES.get(animal_type_id)
-            if resolved and (not allowed_species or resolved in allowed_species):
-                return resolved
+            if resolved:
+                resolved = normalize_species_for_reserve(resolved, reserve_id)
+                if resolved:
+                    return resolved
 
             reserve_types = RESERVE_SPECIES_NAMES.get(int(reserve_id), {})
             resolved = reserve_types.get(animal_type_id)
             if resolved and not resolved.startswith("Animal Type"):
-                species_name = resolved
+                species_name = normalize_species_for_reserve(
+                    resolved, reserve_id
+                )
 
             # Some reserves store this field as the animal name hash rather
             # than the reserve-local species index. Match that hash against
@@ -770,7 +827,8 @@ def resolve_zone_species(row, matches, reserve_id):
                 rec.get("name_hash_id") or rec.get("NameHashId")
             )
             resolved = ANIMAL_TYPE_HASH_NAMES.get(record_hash)
-            if resolved and (not allowed_species or resolved in allowed_species):
+            resolved = normalize_species_for_reserve(resolved, reserve_id)
+            if resolved:
                 hash_species.append(resolved)
         if hash_species:
             species_name = Counter(hash_species).most_common(1)[0][0]
@@ -785,7 +843,9 @@ def resolve_zone_species(row, matches, reserve_id):
                 or rec.get("animal_type")
             )
             if sp and not str(sp).startswith("Animal Type"):
-                species_list.append(str(sp))
+                resolved = normalize_species_for_reserve(sp, reserve_id)
+                if resolved:
+                    species_list.append(resolved)
         if species_list:
             species_name = Counter(species_list).most_common(1)[0][0]
 
@@ -1140,7 +1200,7 @@ class NeedZoneApp:
             )
             if record_species == zone_species:
                 species_matches.append(rec)
-        if species_matches:
+        if zone_species != "Unknown Species":
             matches = species_matches
 
         self.lbl_zone_info.config(

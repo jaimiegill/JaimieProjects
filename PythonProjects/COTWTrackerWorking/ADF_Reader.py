@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import os
 from pathlib import Path
 import re
 import sys
@@ -7,6 +8,44 @@ import time
 
 INPUT_DIR = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedBinariesADFFormat")
 OUTPUT_DIR = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\DecodedADFJSONFormat")
+STATIC_ANIMAL_CATALOG = Path(
+    os.environ.get("COTW_STATIC_INDEX", r"E:\COTWTrackerCache")
+) / "static_animal_catalog.json"
+
+
+def _canonical_hash32(value):
+  if value is None:
+    return None
+  try:
+    if isinstance(value, str):
+      value = value.strip()
+      if not value:
+        return None
+      value = int(value, 16) if value.lower().startswith("0x") else int(value)
+    return int(value) & 0xFFFFFFFF
+  except (TypeError, ValueError):
+    return None
+
+
+def _load_static_species_hashes():
+  if not STATIC_ANIMAL_CATALOG.is_file():
+    return {}
+  try:
+    with STATIC_ANIMAL_CATALOG.open("r", encoding="utf-8") as catalog_file:
+      catalog = json.load(catalog_file)
+  except (OSError, json.JSONDecodeError):
+    return {}
+
+  result = {}
+  for item in catalog.get("animal_name_hashes", []):
+    animal_hash = _canonical_hash32(item.get("hash32"))
+    species = item.get("species")
+    if animal_hash is not None and species:
+      result[animal_hash] = str(species)
+  return result
+
+
+STATIC_SPECIES_HASHES = _load_static_species_hashes()
 
 # -------------------------------------------------------------------------
 # VALID RESERVES & MAP
@@ -441,14 +480,11 @@ def parse_array(stream: TokenStream) -> list:
 
 
 def resolve_species(val, reserve_id):
-  # First resolve generic hashes if valid, then check against reserve whitelist
-  whitelist = RESERVE_SPECIES_WHITELIST.get(reserve_id, set())
-
-  # If val matches a known hash mapping, verify it belongs to this reserve
-  # (Placeholder logic can be expanded here with your actual verified hash map)
-  if isinstance(val, str) and len(val) == 8:
-    # If your specific hash maps to a name, check whitelist:
-    pass
+  # Exact hashes are universal and must not depend on reserve ownership or
+  # whether the species has appeared in the player's decoded save data.
+  animal_hash = _canonical_hash32(val)
+  if animal_hash in STATIC_SPECIES_HASHES:
+    return str(val), STATIC_SPECIES_HASHES[animal_hash]
 
   return str(val), None
 
@@ -494,9 +530,6 @@ def build_animal_record(raw: dict, context: dict, reserve_id: int) -> dict:
   )
 
   species = context.get("species")
-  whitelist = RESERVE_SPECIES_WHITELIST.get(reserve_id, set())
-  if species and species not in whitelist:
-    species = None  # Drop misattributed cross-map species
 
   return {
       "name_hash_id": context.get("name_hash_id"),

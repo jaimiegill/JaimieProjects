@@ -1,6 +1,46 @@
 import csv
+import os
 import re
 from pathlib import Path
+
+
+def merge_need_zone_master(source_csv_path, master_csv_path):
+  source_path = Path(source_csv_path)
+  master_path = Path(master_csv_path)
+  with open(source_path, newline='', encoding='utf-8') as source_file:
+    source_reader = csv.DictReader(source_file)
+    fieldnames = source_reader.fieldnames or []
+    source_rows = list(source_reader)
+
+  if not source_rows or not fieldnames:
+    return 0
+
+  existing_rows = []
+  if master_path.exists():
+    with open(master_path, newline='', encoding='utf-8') as master_file:
+      existing_reader = csv.DictReader(master_file)
+      existing_rows = list(existing_reader)
+
+  merged = {}
+  key_fields = ('ReserveId', 'NeedZoneId', 'NeedType')
+  for row in existing_rows + source_rows:
+    key = tuple(row.get(field, '') for field in key_fields)
+    if all(key):
+      merged[key] = {field: row.get(field, '') for field in fieldnames}
+
+  master_path.parent.mkdir(parents=True, exist_ok=True)
+  with open(master_path, 'w', newline='', encoding='utf-8') as master_file:
+    writer = csv.DictWriter(master_file, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(sorted(
+      merged.values(),
+      key=lambda row: (
+        int(row['ReserveId']) if row['ReserveId'].lstrip('-').isdigit() else 0,
+        row['NeedZoneId'],
+        row['NeedType'],
+      ),
+    ))
+  return len(merged)
 
 
 def convert_adf_txt_to_csv(input_txt_path, output_csv_path):
@@ -84,6 +124,12 @@ def convert_adf_txt_to_csv(input_txt_path, output_csv_path):
       f"Successfully processed {len(records)} need zone records into"
       f" '{output_path}'."
   )
+
+  if records:
+    cache_root = Path(os.environ.get('COTW_STATIC_INDEX', r'E:\COTWTrackerCache'))
+    master_path = cache_root / 'need_zone_master.csv'
+    total = merge_need_zone_master(output_path, master_path)
+    print(f"Updated universal need-zone cache with {total} records: '{master_path}'.")
 
 
 if __name__ == '__main__':
