@@ -7,6 +7,7 @@ import argparse
 import io
 import sys
 import zlib
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 # Set up pathing to locate DECA modules
@@ -149,22 +150,34 @@ def main() -> None:
     found_outputs = 0
     skipped = 0
 
-    for src_path in sorted(input_dir.rglob("*")):
-        if not src_path.is_file() or "animal_population" not in src_path.name.lower():
-            continue
+    candidates = [
+        src_path
+        for src_path in sorted(input_dir.rglob("*"))
+        if src_path.is_file() and "animal_population" in src_path.name.lower()
+    ]
 
-        rel_dir = src_path.parent.relative_to(input_dir) if src_path.is_relative_to(input_dir) else Path(".")
+    def process(src_path: Path) -> tuple[Path, list[str]]:
+        rel_dir = (
+            src_path.parent.relative_to(input_dir)
+            if src_path.is_relative_to(input_dir)
+            else Path(".")
+        )
         target_dir = output_dir / rel_dir
-        outputs = decode_file_to_texts(src_path, target_dir)
-        found_files += 1
-        found_outputs += len(outputs)
+        return src_path, decode_file_to_texts(src_path, target_dir)
 
-        if outputs:
-            for out in outputs:
-                print(f"Decoded: {src_path.name} -> {out}")
-        else:
-            skipped += 1
-            print(f"Skipped: {src_path.name}")
+    # Each file is decoded independently (its own bytes in, own text file out),
+    # so decoding can safely run concurrently across files.
+    with ThreadPoolExecutor(max_workers=min(8, len(candidates) or 1)) as executor:
+        for src_path, outputs in executor.map(process, candidates):
+            found_files += 1
+            found_outputs += len(outputs)
+
+            if outputs:
+                for out in outputs:
+                    print(f"Decoded: {src_path.name} -> {out}")
+            else:
+                skipped += 1
+                print(f"Skipped: {src_path.name}")
 
     print(f"\nFinished. Files scanned: {found_files}. Decoded payloads: {found_outputs}. Skipped: {skipped}.")
 

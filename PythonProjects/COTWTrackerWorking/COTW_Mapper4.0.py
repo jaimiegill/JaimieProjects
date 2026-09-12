@@ -1,4 +1,5 @@
 from collections import Counter
+from functools import lru_cache
 import io
 import json
 import os
@@ -9,13 +10,24 @@ import tkinter as tk
 from tkinter import ttk
 import urllib.request
 
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg,
     NavigationToolbar2Tk,
 )
+from matplotlib.figure import Figure
+from matplotlib.legend_handler import HandlerBase
+from matplotlib.lines import Line2D
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
+from matplotlib.patches import PathPatch
+from matplotlib.path import Path as MplPath
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from PIL import Image, ImageDraw
+from svgelements import SVG, Close as SvgClose, Move as SvgMove
+from svgelements import Path as SvgPath
+from svgelements import Shape as SvgShape
 
 from ADF_Reader import GLOBAL_SPECIES_PROFILES
 from species_metadata import SPECIES_METADATA
@@ -71,6 +83,10 @@ MASTER_ZONE_FILE = Path(
 ) / "need_zone_master.csv"
 MAP_CACHE_DIR = Path(r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\map_cache")
 MAP_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+# Source map tiles are up to 8192x8192; resampling that on every pan/zoom
+# redraw is the main cause of drag/zoom lag, so a smaller display copy is
+# cached and used instead (see get_map_image).
+MAP_DISPLAY_MAX_DIM = 2200
 
 RESERVE_NAMES = {
     0: "Hirschfelden Hunting Reserve",
@@ -518,6 +534,158 @@ NEED_TYPES = {
     3: {"name": "Rest", "color": "#ff7f0e", "marker": "s"},
 }
 
+# Official COTW need-zone icons, rasterized from vector art at runtime and
+# used for the map legend so it matches the in-game HUD icons.
+NEED_ZONE_ICON_DIR = Path(
+    r"C:\Users\gills\JaimieProjects\PythonProjects\COTWTrackerWorking\NeedZoneSVG's"
+)
+NEED_TYPE_ICON_FILES = {
+    1: NEED_ZONE_ICON_DIR / "FeedingZoneIcon.svg",
+    2: NEED_ZONE_ICON_DIR / "DrinkingZoneIcon.svg",
+    3: NEED_ZONE_ICON_DIR / "RestingZoneIcon.svg",
+}
+
+# Only render need-zone markers once the visible view is zoomed in to at
+# most this fraction of the reserve's full extent, and only draw the
+# markers that actually fall inside the current view, so panning/zooming a
+# reserve with thousands of zones stays responsive.
+NEED_ZONE_ZOOM_THRESHOLD = 0.45
+NEED_ZONE_VIEW_MARGIN = 0.15  # extra padding around the view, as a fraction of it
+# Size is in display points (via OffsetImage's zoom), not data units, so it
+# stays fixed on screen regardless of how far the map is zoomed in/out.
+NEED_ZONE_MARKER_ICON_PX = 16  # on-screen size of each need-zone icon glyph
+NEED_ZONE_MAX_VISIBLE_MARKERS = 350  # cap drawn per refresh, closest-first
+NEED_ZONE_REFRESH_DEBOUNCE_MS = 80  # coalesce rapid pan/zoom events
+
+
+def _svg_color_to_rgba01(value):
+    """Convert an svgelements Color to a 0-1 (r, g, b, a) tuple, or None."""
+    if value is None or str(value) == "none" or value.red is None:
+        return None
+    alpha = value.opacity if value.opacity is not None else 1.0
+    return (value.red / 255, value.green / 255, value.blue / 255, alpha)
+
+
+def _flatten_svg_shape(shape, samples_per_curve=32):
+    """Flatten an svgelements shape into a list of polygons (point lists)."""
+    path = SvgPath(shape)
+    subpaths = []
+    current = []
+    for seg in path:
+        if isinstance(seg, SvgMove):
+            if current:
+                subpaths.append(current)
+            current = [(seg.end.x, seg.end.y)]
+        elif isinstance(seg, SvgClose):
+            if current:
+                current.append((seg.end.x, seg.end.y))
+        else:
+            for i in range(1, samples_per_curve + 1):
+                pt = seg.point(i / samples_per_curve)
+                current.append((pt.x, pt.y))
+    if current:
+        subpaths.append(current)
+    return subpaths
+
+
+@lru_cache(maxsize=None)
+def load_need_zone_icon(need_type, size=48, supersample=4):
+    """Rasterize a need-zone SVG icon to an RGBA numpy array, cached by size.
+
+    Rendered with matplotlib's PathPatch (nonzero winding fill), because
+    these icons rely on overlapping same-colour subpaths punching out
+    negative-space cutouts (e.g. the drop/leaf/zzz silhouettes) — a plain
+    per-subpath fill would just paint over those holes.
+    """
+    svg_path = NEED_TYPE_ICON_FILES.get(need_type)
+    if svg_path is None or not svg_path.exists():
+        return None
+
+    try:
+        svg = SVG.parse(str(svg_path))
+        canvas_px = size * supersample
+        dpi = 100
+        fig = Figure(figsize=(canvas_px / dpi, canvas_px / dpi), dpi=dpi)
+        fig.patch.set_alpha(0.0)
+        canvas = FigureCanvasAgg(fig)
+        ax = fig.add_axes([0, 0, 1, 1])
+        ax.patch.set_alpha(0.0)
+        ax.set_xlim(0, 512)
+        ax.set_ylim(512, 0)  # SVG's y-axis points down
+        ax.set_axis_off()
+
+        for shape in svg.elements():
+            if not isinstance(shape, SvgShape):
+                continue
+            fill = _svg_color_to_rgba01(shape.fill)
+            stroke = _svg_color_to_rgba01(shape.stroke)
+            stroke_width_pt = (
+                (shape.stroke_width or 0) * (canvas_px / 512.0) * 72.0 / dpi
+            )
+
+            verts, codes = [], []
+            for subpath in _flatten_svg_shape(shape):
+                verts.append(subpath[0])
+                codes.append(MplPath.MOVETO)
+                for pt in subpath[1:]:
+                    verts.append(pt)
+                    codes.append(MplPath.LINETO)
+                verts.append(subpath[0])
+                codes.append(MplPath.CLOSEPOLY)
+            if not verts:
+                continue
+
+            ax.add_patch(PathPatch(
+                MplPath(verts, codes),
+                facecolor=fill if fill else "none",
+                edgecolor=stroke if stroke else "none",
+                linewidth=stroke_width_pt if stroke else 0,
+                joinstyle="round",
+            ))
+
+        canvas.draw()
+        img = Image.fromarray(np.asarray(canvas.buffer_rgba()), mode="RGBA")
+
+        # Trim the transparent margin around the icon (down to just outside
+        # the white circular border) so it isn't drawn smaller than it needs
+        # to be once resized.
+        bbox = img.getchannel("A").getbbox()
+        if bbox:
+            pad = max(2, supersample)
+            img = img.crop((
+                max(bbox[0] - pad, 0),
+                max(bbox[1] - pad, 0),
+                min(bbox[2] + pad, img.width),
+                min(bbox[3] + pad, img.height),
+            ))
+
+        return np.asarray(img.resize((size, size), Image.LANCZOS))
+    except Exception:
+        return None
+
+
+
+class _IconLegendHandler(HandlerBase):
+    """Draws a legend entry as a small raster icon instead of a marker."""
+
+    def __init__(self, image):
+        super().__init__()
+        self.image = image
+
+    def create_artists(
+        self, legend, orig_handle, xdescent, ydescent, width, height,
+        fontsize, trans,
+    ):
+        size = min(width, height)
+        offset_image = OffsetImage(self.image, zoom=size / self.image.shape[0])
+        ab = AnnotationBbox(
+            offset_image,
+            (width / 2 - xdescent, height / 2 - ydescent),
+            xycoords=trans,
+            frameon=False,
+        )
+        return [ab]
+
 
 def generate_fallback_grid(width=1024, height=1024):
     img = Image.new("RGB", (width, height), color=(40, 50, 60))
@@ -536,7 +704,7 @@ def generate_fallback_grid(width=1024, height=1024):
     return img
 
 
-def get_map_image(reserve_id):
+def _load_full_map_image(reserve_id):
     cached_file = MAP_CACHE_DIR / f"reserve_{reserve_id}_full.png"
     if cached_file.exists():
         try:
@@ -568,7 +736,39 @@ def get_map_image(reserve_id):
             f"Notice: Could not fetch map for Reserve {reserve_id} from {url} ({e})"
         )
 
-    return generate_fallback_grid()
+    return None
+
+
+@lru_cache(maxsize=None)
+def get_map_image(reserve_id):
+    """Background map for the given reserve, downsized for interactive draws.
+
+    The source tiles are up to 8192x8192; resampling that every single
+    pan/zoom redraw is the main drag/zoom lag, so a display-resolution copy
+    is cached (in memory and on disk) and reused instead of the full-res art.
+    """
+    display_cache = MAP_CACHE_DIR / f"reserve_{reserve_id}_display.png"
+    if display_cache.exists():
+        try:
+            return Image.open(display_cache)
+        except Exception:
+            pass
+
+    img = _load_full_map_image(reserve_id)
+    if img is None:
+        return generate_fallback_grid()
+
+    if max(img.size) > MAP_DISPLAY_MAX_DIM:
+        scale = MAP_DISPLAY_MAX_DIM / max(img.size)
+        new_size = (
+            max(1, int(img.width * scale)), max(1, int(img.height * scale)),
+        )
+        img = img.convert("RGBA").resize(new_size, Image.LANCZOS)
+        try:
+            img.save(display_cache)
+        except Exception:
+            pass
+    return img
 
 
 def _range_score(value, bounds):
@@ -1209,7 +1409,22 @@ class NeedZoneApp:
         self.scatter_collections = []
         self.scatter_data_map = {}
 
-        self.canvas.mpl_connect("button_press_event", self.on_click)
+        # Cached data for the current reserve, used to redraw only the
+        # need-zone markers visible in the current viewport as the user
+        # zooms/pans, instead of replotting the whole reserve every time.
+        self._zone_view_sub_df = None
+        self._zone_view_bounds = None
+        self._zone_artists = []
+        self._zoom_hint_artist = None
+        self._zone_refresh_job = None
+        self._pan_active = False
+        self._pan_dragged = False
+        self._clamping_view = False
+
+        self.canvas.mpl_connect("button_press_event", self.on_mouse_press)
+        self.canvas.mpl_connect("motion_notify_event", self.on_mouse_move)
+        self.canvas.mpl_connect("button_release_event", self.on_mouse_release)
+        self.canvas.mpl_connect("scroll_event", self.on_scroll_zoom)
         self.update_plot()
         self.refresh_species_nav()
 
@@ -1393,8 +1608,14 @@ class NeedZoneApp:
 
     def update_plot(self):
         self.ax.clear()
+        # ax.clear() drops any previously registered callbacks, so the
+        # viewport-based marker refresh must be reconnected every time.
+        self.ax.callbacks.connect("xlim_changed", self.on_view_changed)
+        self.ax.callbacks.connect("ylim_changed", self.on_view_changed)
         self.scatter_collections.clear()
         self.scatter_data_map.clear()
+        self._zone_artists = []
+        self._zoom_hint_artist = None
 
         self.lbl_zone_info.config(
             text="Click a zone marker on the map to inspect.",
@@ -1407,10 +1628,12 @@ class NeedZoneApp:
         selected_label = self.dropdown.get()
         rid = self.reserve_map.get(selected_label)
         if rid is None:
+            self._zone_view_sub_df = None
             return
 
         sub_df = self.df[self.df["ReserveId"] == rid].copy()
         if sub_df.empty:
+            self._zone_view_sub_df = None
             self.canvas.draw()
             return
 
@@ -1442,64 +1665,10 @@ class NeedZoneApp:
                 zorder=0,
             )
 
-        # Flag shared need zones: same reserve/need-type/position used by
-        # more than one species. Distinct zones are never closer than ~64 m
-        # apart in the data, so meter-level position matching is safe.
-        shared_keys = set()
-        for (nt, rx, rz), g in sub_df.groupby(
-            [
-                sub_df["NeedType"],
-                sub_df["Position_X"].round(0),
-                sub_df["Position_Z"].round(0),
-            ]
-        ):
-            if g["AnimalTypeLocalizationName"].nunique() > 1:
-                shared_keys.add((nt, rx, rz))
-
-        shared_ring_labelled = False
-        for need_type, meta in NEED_TYPES.items():
-            type_df = sub_df[sub_df["NeedType"] == need_type]
-            if type_df.empty:
-                continue
-
-            sc = self.ax.scatter(
-                type_df["Plot_X"],
-                type_df["Plot_Z"],
-                c=meta["color"],
-                marker=meta["marker"],
-                label=f"{meta['name']} Zone",
-                alpha=0.85,
-                s=45,
-                edgecolors="black",
-                linewidths=0.6,
-                zorder=2,
-                picker=5,
-            )
-            self.scatter_collections.append(sc)
-            self.scatter_data_map[sc] = type_df.to_dict("records")
-
-            # Ring the spots shared by multiple species.
-            if shared_keys:
-                row_keys = zip(
-                    type_df["NeedType"],
-                    type_df["Position_X"].round(0),
-                    type_df["Position_Z"].round(0),
-                )
-                shared_df = type_df[
-                    [key in shared_keys for key in row_keys]
-                ]
-                if not shared_df.empty:
-                    self.ax.scatter(
-                        shared_df["Plot_X"],
-                        shared_df["Plot_Z"],
-                        facecolors="none",
-                        edgecolors="gold",
-                        s=160,
-                        linewidths=1.6,
-                        zorder=3,
-                        label=None if shared_ring_labelled else "Shared Zone",
-                    )
-                    shared_ring_labelled = True
+        # Cache the reserve's full data set so zoom/pan can redraw only the
+        # markers visible in the viewport without recomputing any of this.
+        self._zone_view_sub_df = sub_df
+        self._zone_view_bounds = (left, right, bottom, top)
 
         self.ax.set_xlim(left, right)
         self.ax.set_ylim(bottom, top)
@@ -1517,9 +1686,182 @@ class NeedZoneApp:
 
         self.ax.set_aspect("equal", adjustable="box")
         self.ax.grid(True, linestyle="--", alpha=0.3, zorder=1)
-        self.ax.legend(loc="upper right")
 
-        self.canvas.draw()
+        self._build_legend()
+        self._refresh_zone_markers()
+
+    def _build_legend(self):
+        """Build a legend that uses the actual COTW need-zone icons."""
+        handles = []
+        labels = []
+        handler_map = {}
+        for need_type, meta in NEED_TYPES.items():
+            icon = load_need_zone_icon(need_type)
+            proxy = Line2D([], [], linestyle="none")
+            if icon is not None:
+                handler_map[proxy] = _IconLegendHandler(icon)
+            else:
+                proxy = Line2D(
+                    [], [], marker=meta["marker"], color=meta["color"],
+                    linestyle="none", markeredgecolor="black",
+                    markersize=8,
+                )
+            handles.append(proxy)
+            labels.append(f"{meta['name']} Zone")
+
+        self.ax.legend(
+            handles, labels, handler_map=handler_map, loc="upper right",
+            handlelength=2.0, handleheight=2.0, labelspacing=0.9,
+            fontsize=9, borderpad=0.6,
+        )
+
+    def on_view_changed(self, _axes):
+        # Also clamp views set by the toolbar's own Pan/Zoom-rect tools; the
+        # guard flag stops the set_xlim/set_ylim calls below from recursing.
+        if not self._clamping_view:
+            xlim, ylim = self.ax.get_xlim(), self.ax.get_ylim()
+            clamped_xlim, clamped_ylim = self._clamp_view_to_bounds(xlim, ylim)
+            if clamped_xlim != xlim or clamped_ylim != ylim:
+                self._clamping_view = True
+                try:
+                    self.ax.set_xlim(clamped_xlim)
+                    self.ax.set_ylim(clamped_ylim)
+                finally:
+                    self._clamping_view = False
+
+        # Coalesce bursts of pan/zoom events (a single scroll tick already
+        # fires this twice, once for x and once for y) into one redraw.
+        if self._zone_refresh_job is not None:
+            self.root.after_cancel(self._zone_refresh_job)
+        self._zone_refresh_job = self.root.after(
+            NEED_ZONE_REFRESH_DEBOUNCE_MS, self._run_debounced_zone_refresh
+        )
+
+    def _run_debounced_zone_refresh(self):
+        self._zone_refresh_job = None
+        self._refresh_zone_markers()
+
+    def _hide_zone_markers(self):
+        """Hide icon/marker artists so in-flight drag/zoom redraws only have
+        to resample the basemap, not re-blit every icon; the debounced
+        refresh rebuilds and shows the correct set once the view settles."""
+        for artist in self._zone_artists:
+            artist.set_visible(False)
+        if self._zoom_hint_artist is not None:
+            self._zoom_hint_artist.set_visible(False)
+
+    def _refresh_zone_markers(self):
+        """Redraw only the need-zone markers inside the current viewport.
+
+        Below `NEED_ZONE_ZOOM_THRESHOLD` (i.e. zoomed out), no markers are
+        drawn at all so panning/zooming a reserve with many zones stays
+        responsive; a hint is shown instead.
+        """
+        for artist in self._zone_artists:
+            artist.remove()
+        self._zone_artists = []
+        self.scatter_collections.clear()
+        self.scatter_data_map.clear()
+        if self._zoom_hint_artist is not None:
+            self._zoom_hint_artist.remove()
+            self._zoom_hint_artist = None
+
+        sub_df = self._zone_view_sub_df
+        if sub_df is None or sub_df.empty or self._zone_view_bounds is None:
+            self.canvas.draw_idle()
+            return
+
+        left, right, bottom, top = self._zone_view_bounds
+        full_width = abs(right - left)
+        full_height = abs(top - bottom)
+
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        view_width = abs(xlim[1] - xlim[0])
+        view_height = abs(ylim[1] - ylim[0])
+
+        zoomed_in_enough = (
+            full_width > 0 and view_width <= full_width * NEED_ZONE_ZOOM_THRESHOLD
+        ) or (
+            full_height > 0
+            and view_height <= full_height * NEED_ZONE_ZOOM_THRESHOLD
+        )
+
+        if not zoomed_in_enough:
+            self._zoom_hint_artist = self.ax.text(
+                0.5, 0.5,
+                "Zoom in to view need zone markers",
+                transform=self.ax.transAxes,
+                ha="center", va="center",
+                fontsize=11, fontweight="bold", color="white",
+                bbox=dict(boxstyle="round", facecolor="black", alpha=0.55),
+                zorder=5,
+            )
+            self.canvas.draw_idle()
+            return
+
+        x_min, x_max = min(xlim), max(xlim)
+        y_min, y_max = min(ylim), max(ylim)
+        margin_x = view_width * NEED_ZONE_VIEW_MARGIN
+        margin_y = view_height * NEED_ZONE_VIEW_MARGIN
+        visible_df = sub_df[
+            sub_df["Plot_X"].between(x_min - margin_x, x_max + margin_x)
+            & sub_df["Plot_Z"].between(y_min - margin_y, y_max + margin_y)
+        ]
+
+        # Cap how many markers get built each refresh (AnnotationBbox
+        # objects are relatively expensive) so a very dense area can't stall
+        # panning/zooming; keep whichever are closest to the view center.
+        if len(visible_df) > NEED_ZONE_MAX_VISIBLE_MARKERS:
+            center_x = (x_min + x_max) / 2.0
+            center_z = (y_min + y_max) / 2.0
+            dist2 = (
+                (visible_df["Plot_X"] - center_x) ** 2
+                + (visible_df["Plot_Z"] - center_z) ** 2
+            )
+            visible_df = visible_df.loc[
+                dist2.nsmallest(NEED_ZONE_MAX_VISIBLE_MARKERS).index
+            ]
+
+        for need_type, meta in NEED_TYPES.items():
+            type_df = visible_df[visible_df["NeedType"] == need_type]
+            if type_df.empty:
+                continue
+
+            icon = load_need_zone_icon(need_type)
+
+            # The scatter is the click-hit target; when an icon is drawn it
+            # is made invisible and the icon image is the visible glyph.
+            sc = self.ax.scatter(
+                type_df["Plot_X"],
+                type_df["Plot_Z"],
+                c=meta["color"] if icon is None else "none",
+                marker=meta["marker"],
+                alpha=0.85 if icon is None else 0.0,
+                s=45,
+                edgecolors="black" if icon is None else "none",
+                linewidths=0.6,
+                zorder=2,
+                picker=5,
+            )
+            self.scatter_collections.append(sc)
+            self.scatter_data_map[sc] = type_df.to_dict("records")
+            self._zone_artists.append(sc)
+
+            if icon is not None:
+                zoom = NEED_ZONE_MARKER_ICON_PX / icon.shape[0]
+                for plot_x, plot_z in zip(type_df["Plot_X"], type_df["Plot_Z"]):
+                    ab = AnnotationBbox(
+                        OffsetImage(icon, zoom=zoom),
+                        (plot_x, plot_z),
+                        frameon=False,
+                        pad=0,
+                        zorder=3,
+                    )
+                    self.ax.add_artist(ab)
+                    self._zone_artists.append(ab)
+
+        self.canvas.draw_idle()
 
     def display_zone_details(self, row):
         reserve_id = int(row["ReserveId"])
@@ -1715,6 +2057,123 @@ class NeedZoneApp:
 
         self.lbl_zone_status.config(text=" | ".join(zone_status))
 
+    def on_scroll_zoom(self, event):
+        """Zoom the map in/out around the cursor using the mouse scroll wheel."""
+        if event.inaxes != self.ax:
+            return
+
+        self._hide_zone_markers()
+
+        base_scale = 1.2
+        scale_factor = 1 / base_scale if event.button == "up" else base_scale
+
+        cur_xlim = self.ax.get_xlim()
+        cur_ylim = self.ax.get_ylim()
+        xdata = event.xdata
+        ydata = event.ydata
+        if xdata is None or ydata is None:
+            return
+
+        new_width = (cur_xlim[1] - cur_xlim[0]) * scale_factor
+        new_height = (cur_ylim[1] - cur_ylim[0]) * scale_factor
+
+        relx = (cur_xlim[1] - xdata) / (cur_xlim[1] - cur_xlim[0])
+        rely = (cur_ylim[1] - ydata) / (cur_ylim[1] - cur_ylim[0])
+
+        new_xlim = (xdata - new_width * (1 - relx), xdata + new_width * relx)
+        new_ylim = (ydata - new_height * (1 - rely), ydata + new_height * rely)
+        new_xlim, new_ylim = self._clamp_view_to_bounds(new_xlim, new_ylim)
+
+        self.ax.set_xlim(new_xlim)
+        self.ax.set_ylim(new_ylim)
+        self.canvas.draw_idle()
+
+    def _clamp_view_to_bounds(self, xlim, ylim):
+        """Prevent zooming out past, or panning outside of, the full map."""
+        bounds = self._zone_view_bounds
+        if bounds is None:
+            return xlim, ylim
+
+        left, right, bottom, top = bounds
+        full_left, full_right = min(left, right), max(left, right)
+        full_bottom, full_top = min(bottom, top), max(bottom, top)
+        full_width = full_right - full_left
+        full_height = full_top - full_bottom
+
+        x_lo, x_hi = min(xlim), max(xlim)
+        y_lo, y_hi = min(ylim), max(ylim)
+        width = min(x_hi - x_lo, full_width)
+        height = min(y_hi - y_lo, full_height)
+
+        cx = (x_lo + x_hi) / 2.0
+        cy = (y_lo + y_hi) / 2.0
+        x_lo, x_hi = cx - width / 2.0, cx + width / 2.0
+        y_lo, y_hi = cy - height / 2.0, cy + height / 2.0
+
+        # Slide the viewport back inside the map bounds instead of resizing.
+        if x_lo < full_left:
+            x_hi += full_left - x_lo
+            x_lo = full_left
+        if x_hi > full_right:
+            x_lo -= x_hi - full_right
+            x_hi = full_right
+        if y_lo < full_bottom:
+            y_hi += full_bottom - y_lo
+            y_lo = full_bottom
+        if y_hi > full_top:
+            y_lo -= y_hi - full_top
+            y_hi = full_top
+
+        # Preserve whichever axis orientation was requested (may be inverted).
+        clamped_xlim = (x_hi, x_lo) if xlim[0] > xlim[1] else (x_lo, x_hi)
+        clamped_ylim = (y_hi, y_lo) if ylim[0] > ylim[1] else (y_lo, y_hi)
+        return clamped_xlim, clamped_ylim
+
+    def on_mouse_press(self, event):
+        """Start a potential left-button drag-to-pan (no toolbar click needed)."""
+        if self.toolbar.mode != "" or event.inaxes != self.ax or event.button != 1:
+            return
+        self._pan_active = True
+        self._pan_dragged = False
+        self._pan_start_px = (event.x, event.y)
+        self._pan_start_xlim = self.ax.get_xlim()
+        self._pan_start_ylim = self.ax.get_ylim()
+
+    def on_mouse_move(self, event):
+        if not getattr(self, "_pan_active", False):
+            return
+        if event.x is None or event.y is None:
+            return
+
+        dx_px = event.x - self._pan_start_px[0]
+        dy_px = event.y - self._pan_start_px[1]
+        if not self._pan_dragged and (abs(dx_px) > 3 or abs(dy_px) > 3):
+            self._pan_dragged = True
+            self._hide_zone_markers()
+        if not self._pan_dragged:
+            return
+
+        inv = self.ax.transData.inverted()
+        x0, y0 = inv.transform(self._pan_start_px)
+        x1, y1 = inv.transform((event.x, event.y))
+        dx, dy = x0 - x1, y0 - y1
+
+        xlim = self._pan_start_xlim
+        ylim = self._pan_start_ylim
+        new_xlim, new_ylim = self._clamp_view_to_bounds(
+            (xlim[0] + dx, xlim[1] + dx), (ylim[0] + dy, ylim[1] + dy)
+        )
+        self.ax.set_xlim(new_xlim)
+        self.ax.set_ylim(new_ylim)
+        self.canvas.draw_idle()
+
+    def on_mouse_release(self, event):
+        was_dragging = getattr(self, "_pan_dragged", False)
+        self._pan_active = False
+        self._pan_dragged = False
+        if not was_dragging:
+            self.on_click(event)
+
     def on_click(self, event):
         if self.toolbar.mode != "" or event.inaxes != self.ax:
             return
@@ -1728,6 +2187,8 @@ class NeedZoneApp:
                 break
 
     def on_close(self):
+        if self._zone_refresh_job is not None:
+            self.root.after_cancel(self._zone_refresh_job)
         plt.close("all")
         self.root.quit()
         self.root.destroy()
@@ -1811,22 +2272,11 @@ def load_zone_animal_lookup():
             for zone_id in animal.get("_extracted_zones", []):
                 add_to_lookup(animal_res, zone_id, animal)
 
-    if ANIMAL_FILE.exists():
-        try:
-            with ANIMAL_FILE.open("r", encoding="utf-8") as f:
-                all_records = json.load(f)
-            all_extracted = extract_animals_from_json(
-                all_records, default_reserve_id=None
-            )
-            for animal in all_extracted:
-                learn_species_hash(animal)
-                animal_res = animal.get("_reserve_id")
-                if animal_res is None:
-                    continue
-                for zone_id in animal.get("_extracted_zones", []):
-                    add_to_lookup(animal_res, zone_id, animal)
-        except Exception as e:
-            print(f"Warning: Could not load {ANIMAL_FILE}: {e}")
+    # ANIMAL_FILE (all_animals.json) is the aggregate of the per-reserve
+    # parsed files already processed above. Its records carry no reserve_id
+    # field of their own, so re-parsing it here would only relearn the same
+    # species hashes and would never populate the zone lookup (reserve id
+    # always resolves to None) -- it was pure redundant I/O and is skipped.
 
     ANIMAL_TYPE_HASH_NAMES.update(report_species)
     ANIMAL_TYPE_HASH_NAMES.update(VERIFIED_HASH_SPECIES_OVERRIDES)

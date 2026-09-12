@@ -17,6 +17,7 @@ dependencies = [
     "xlsxwriter>=3.2.9",
     "pygltflib>=1.16.5",
     "scipy>=1.18.1",
+    "svgelements>=1.9.6",
 ]
 
 [project.scripts]

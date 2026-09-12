@@ -47,6 +47,13 @@ def _load_static_species_hashes():
 
 STATIC_SPECIES_HASHES = _load_static_species_hashes()
 
+_METADATA_ANNOTATION_RE = re.compile(
+    r"\b(o:|s:|t:|dt:|dv:|name_table|structure|typedefs)\b", re.IGNORECASE
+)
+_INT_LITERAL_RE = re.compile(r"[-+]?\d+")
+_HEX_LITERAL_RE = re.compile(r"0x[0-9a-fA-F]+", re.IGNORECASE)
+_FLOAT_LITERAL_RE = re.compile(r"[-+]?\d*\.\d+(?:[eE][-+]?\d+)?")
+
 # -------------------------------------------------------------------------
 # VALID RESERVES & MAP
 # -------------------------------------------------------------------------
@@ -383,11 +390,7 @@ def skip_metadata_annotations(stream: TokenStream, max_skips=200):
         continue
       stream.pos = saved_pos
 
-    if re.search(
-        r"\b(o:|s:|t:|dt:|dv:|name_table|structure|typedefs)\b",
-        tok,
-        re.IGNORECASE,
-    ):
+    if _METADATA_ANNOTATION_RE.search(tok):
       stream.pop()
       skips += 1
       continue
@@ -398,12 +401,12 @@ def skip_metadata_annotations(stream: TokenStream, max_skips=200):
 def parse_scalar(val: str):
   if val is None:
     return None
-  if re.fullmatch(r"[-+]?\d+", val):
+  if _INT_LITERAL_RE.fullmatch(val):
     return int(val)
-  if re.fullmatch(r"0x[0-9a-fA-F]+", val, re.IGNORECASE):
+  if _HEX_LITERAL_RE.fullmatch(val):
     return int(val, 16)
   try:
-    if re.fullmatch(r"[-+]?\d*\.\d+(?:[eE][-+]?\d+)?", val):
+    if _FLOAT_LITERAL_RE.fullmatch(val):
       return float(val)
   except ValueError:
     pass
