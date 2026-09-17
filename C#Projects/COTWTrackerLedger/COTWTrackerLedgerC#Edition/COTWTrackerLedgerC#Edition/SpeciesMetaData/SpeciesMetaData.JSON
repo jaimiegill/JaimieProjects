@@ -1,0 +1,1718 @@
+{
+  "0": {
+    "Canada Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 8.59,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "European Bison": {
+      "MaxLevel": 5,
+      "DiamondMin": 127.62,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "European Rabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 2.42,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Leucistic\n Light Brown\n Light Grey\n Melanistic\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Fallow Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 249.99,
+      "RareFurs": [
+        "Albino\n Chocolate\n Dark\n Dark Spotted\n Melanistic\n Piebald\n Red Spotted\n Spotted\n White \n Golden\n Mocha\n Hooded\n Silver"
+      ],
+      "GreatOne": true
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Roe Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 81.86,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Dark Grey\n Leucistic\n Melanistic\n Orange\n Piebald\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Wild Boar": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Brown\n Dark Brown\n Light Brown\n Melanistic\n Purplegrey\n\n Brindle\n Butterscotch\n Chalk\n Cinder\n Scorch\n Smolder\n Stitch\n Stripple"
+      ],
+      "GreatOne": true
+    }
+  },
+  "1": {
+    "Black Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 22.8,
+      "RareFurs": [
+        "Black\n Blonde\n Brown\n Cinnamon\n Dark\n Dusky\n\n Cream\n Spotted\n Spirit\n Chestnut"
+      ],
+      "GreatOne": true
+    },
+    "Blacktail Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 177.5,
+      "RareFurs": [
+        "Albino\n Dark Grey\n Grey\n Grey-Brown\n Melanistic\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Coyote": {
+      "MaxLevel": 9,
+      "DiamondMin": 56.8,
+      "RareFurs": [
+        "Albino\n Dark-Grey\n Grey-Brown\n Light Grey\n Melanistic\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Merriam Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.62,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Roosevelt Elk": {
+      "MaxLevel": 5,
+      "DiamondMin": 380.8,
+      "RareFurs": [
+        "Albino\n Brown\n Melanistic\n Orange\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "White-tailed Jackrabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 6.3,
+      "RareFurs": [
+        "Albino\n Beige\n Brown\n Grey\n Light Brown"
+      ],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    }
+  },
+  "2": {
+    "Eurasian Brown Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.7,
+      "RareFurs": [
+        "Albino\n Blond\n Cinnamon\n Dark Brown\n Gold\n Grey\n Light Brown\n Melanistic\n Red-Brown\n Spirit"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Lynx": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.68,
+      "RareFurs": [
+        "Albino\n Grey\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Gray Wolf": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Egg White\n Dark Grey\n Grey\n Melanistic\n Melanistic Charcoal\n Red Brown\n\n Dawnbreak\n Frostbite\n Gravehide\n Hollow\n Razorwind\n Scarborne\n Twinsoul\n Vanguard"
+      ],
+      "GreatOne": true
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Mountain Reindeer": {
+      "MaxLevel": 5,
+      "DiamondMin": 430.23,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Siberian Musk Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 249,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Grey Brown\n Melanistic\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Western Capercaillie": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.64,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Wild Boar": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Brown\n Dark Brown\n Light Brown\n Melanistic\n Purplegrey\n\n Brindle\n Butterscotch\n Chalk\n Cinder\n Scorch\n Smolder\n Stitch\n Stripple"
+      ],
+      "GreatOne": true
+    }
+  },
+  "3": {
+    "Blue Wildebeest": {
+      "MaxLevel": 5,
+      "DiamondMin": 37.6,
+      "RareFurs": [
+        "Albino\n Crowned\n Dark Grey\n Gold\n Grey"
+      ],
+      "GreatOne": false
+    },
+    "Cape Buffalo": {
+      "MaxLevel": 9,
+      "DiamondMin": 151.35,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Grey\n Leucistic"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Wigeon": {
+      "MaxLevel": 3,
+      "DiamondMin": 905,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Gemsbok": {
+      "MaxLevel": 5,
+      "DiamondMin": 337.5,
+      "RareFurs": [
+        "Beige\n Dark\n Grey\n Light Grey\n Gold"
+      ],
+      "GreatOne": false
+    },
+    "Lesser Kudu": {
+      "MaxLevel": 5,
+      "DiamondMin": 151.6,
+      "RareFurs": [
+        "Albino\n Grey\n Dark Brown\n Dusky\n Melanistic\n Red Brown"
+      ],
+      "GreatOne": false
+    },
+    "Lion": {
+      "MaxLevel": 9,
+      "DiamondMin": 48.5,
+      "RareFurs": [
+        "Albino\n Blonde\n Dark-Brown\n Light Brown\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Scrub Hare": {
+      "MaxLevel": 3,
+      "DiamondMin": 5.3,
+      "RareFurs": [
+        "Brown\n Chestnut\n Grey\n Light Gray"
+      ],
+      "GreatOne": false
+    },
+    "Side-Striped Jackal": {
+      "MaxLevel": 9,
+      "DiamondMin": 29.1,
+      "RareFurs": [
+        "Albino\n Light Brown\n Grey\n Grey Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Springbok": {
+      "MaxLevel": 5,
+      "DiamondMin": 78.55,
+      "RareFurs": [
+        "\u0027Albino\n Black Brown\n Orange\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Warthog": {
+      "MaxLevel": 5,
+      "DiamondMin": 58.2,
+      "RareFurs": [
+        "Albino\n Dark\n Grey\n Red Brown\n Red"
+      ],
+      "GreatOne": false
+    }
+  },
+  "4": {
+    "Axis Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 217.2,
+      "RareFurs": [
+        "Albino\n Dark\n Melanistic\n Orange\n Piebald\n Spotted"
+      ],
+      "GreatOne": false
+    },
+    "Blackbuck": {
+      "MaxLevel": 5,
+      "DiamondMin": 132.2,
+      "RareFurs": [
+        "Albino\n Beige\n Brown\n Dark Brown\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Cinnamon Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.6,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Collared Peccary": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.2,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Dark-Grey\n Grey\n Leucistic\n Melanistic\n Ochre"
+      ],
+      "GreatOne": false
+    },
+    "Mule Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 312.17,
+      "RareFurs": [
+        "Albino\n Blonde\n Brown\n Dilute\n Erythristic Isabelline\n Erythristic Red\n Grey\n Leucistic\n Melanistic\n Mosaic\n Piebald\n\n Cobweb Enigma\n Dripple Drizzle\n Dusky Drift\n Milky Way\n Petal Puff"
+      ],
+      "GreatOne": true
+    },
+    "Puma": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Albino\n Dark Red\n Grey\n Light Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Water Buffalo": {
+      "MaxLevel": 9,
+      "DiamondMin": 167.54,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Grey\n Orange"
+      ],
+      "GreatOne": false
+    }
+  },
+  "6": {
+    "Canada Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 8.59,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Grant Caribou": {
+      "MaxLevel": 5,
+      "DiamondMin": 430.23,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Gray Wolf": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Egg White\n Dark Grey\n Grey\n Melanistic\n Melanistic Charcoal\n Red Brown\n\n Dawnbreak\n Frostbite\n Gravehide\n Hollow\n Razorwind\n Scarborne\n Twinsoul\n Vanguard"
+      ],
+      "GreatOne": true
+    },
+    "Grizzly Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 66.94,
+      "RareFurs": [
+        "Albino\n Brown\n Grey Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Harlequin Duck": {
+      "MaxLevel": 3,
+      "DiamondMin": 7.23,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Plains Bison": {
+      "MaxLevel": 5,
+      "DiamondMin": 183.5,
+      "RareFurs": [
+        "Albino\n Brown\n Dark\n Light Brown\n Light Grey\n Leucistic\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    }
+  },
+  "8": {
+    "Beceite Ibex": {
+      "MaxLevel": 5,
+      "DiamondMin": 191.63,
+      "RareFurs": [
+        "Albino\n Brown Hybrid\n Buff\n Grey\n Grey-Brown\n Light Brown\n Melanistic\n Orange"
+      ],
+      "GreatOne": false
+    },
+    "European Hare": {
+      "MaxLevel": 3,
+      "DiamondMin": 6.5,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Light Brown\n Grey\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Gredos Ibex": {
+      "MaxLevel": 5,
+      "DiamondMin": 100.17,
+      "RareFurs": [
+        "Albino\n Brown Hybrid\n Buff\n Gray Brown\n Grey\n Light Brown\n Light Grey\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Iberian Mouflon": {
+      "MaxLevel": 5,
+      "DiamondMin": 179.56,
+      "RareFurs": [
+        "Albino\n Brown\n Grey\n Light Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Iberian Wolf": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Albino\n Grey\n Grey-Brown\n Melanistic\n Olive\n Pristine\n Winter\nMission Exclusive: Ogro\n Sombra\n Fantasma"
+      ],
+      "GreatOne": false
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Roe Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 81.86,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Dark Grey\n Leucistic\n Melanistic\n Orange\n Piebald\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Ronda Ibex": {
+      "MaxLevel": 5,
+      "DiamondMin": 107.98,
+      "RareFurs": [
+        "Albino\n Brown\n Brown Hybrid\n Buff\n Grey\n Grey-Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Southeastern Spanish Ibex": {
+      "MaxLevel": 5,
+      "DiamondMin": 89.68,
+      "RareFurs": [
+        "Albino\n Brown Hybrid\n Buff\n Grey-Brown\n Light Brown\n Light Grey\n Melanistic\n Orange"
+      ],
+      "GreatOne": false
+    },
+    "Wild Boar": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Brown\n Dark Brown\n Light Brown\n Melanistic\n Purplegrey\n\n Brindle\n Butterscotch\n Chalk\n Cinder\n Scorch\n Smolder\n Stitch\n Stripple"
+      ],
+      "GreatOne": true
+    }
+  },
+  "9": {
+    "Black Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 22.8,
+      "RareFurs": [
+        "Black\n Blonde\n Brown\n Cinnamon\n Dark\n Dusky\n\n Cream\n Spotted\n Spirit\n Chestnut"
+      ],
+      "GreatOne": true
+    },
+    "Merriam Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.62,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Mountain Goat": {
+      "MaxLevel": 5,
+      "DiamondMin": 107.67,
+      "RareFurs": [
+        "Albino\n Beige\n Light Brown\n Light Grey\n Melanistic\n White"
+      ],
+      "GreatOne": false
+    },
+    "Mountain Lion": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Albino\n Dark Red\n Grey\n Light Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Mule Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 312.17,
+      "RareFurs": [
+        "Albino\n Blonde\n Brown\n Dilute\n Erythristic Isabelline\n Erythristic Red\n Grey\n Leucistic\n Melanistic\n Mosaic\n Piebald\n\n Cobweb Enigma\n Dripple Drizzle\n Dusky Drift\n Milky Way\n Petal Puff"
+      ],
+      "GreatOne": true
+    },
+    "Plains Bison": {
+      "MaxLevel": 5,
+      "DiamondMin": 183.5,
+      "RareFurs": [
+        "Albino\n Brown\n Dark\n Light Brown\n Light Grey\n Leucistic\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Pronghorn": {
+      "MaxLevel": 5,
+      "DiamondMin": 108,
+      "RareFurs": [
+        "Albino\n Brown\n Dark\n Leucistic\n Melanistic\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Rocky Mountain Bighorn Sheep": {
+      "MaxLevel": 5,
+      "DiamondMin": 196.93,
+      "RareFurs": [
+        "Albino\n Black\n Bronze\n Brown\n Grey\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Rocky Mountain Elk": {
+      "MaxLevel": 5,
+      "DiamondMin": 481.41,
+      "RareFurs": [
+        "Albino\n Brown\n Common\n Light Grey\n Piebald"
+      ],
+      "GreatOne": false
+    }
+  },
+  "10": {
+    "Chamois": {
+      "MaxLevel": 5,
+      "DiamondMin": 58,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Grey Brown\n Honeytones\n Leucistic\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "European Rabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 2.42,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Leucistic\n Light Brown\n Light Grey\n Melanistic\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Fallow Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 249.99,
+      "RareFurs": [
+        "Albino\n Chocolate\n Dark\n Dark Spotted\n Melanistic\n Piebald\n Red Spotted\n Spotted\n White \n Golden\n Mocha\n Hooded\n Silver"
+      ],
+      "GreatOne": true
+    },
+    "Feral Goat": {
+      "MaxLevel": 5,
+      "DiamondMin": 208.71,
+      "RareFurs": [
+        "Albino\n Black\n Black Brown\n Back White\n Blonde\n Brown\n Dark Brown\n Mixed\n White\n White Brown"
+      ],
+      "GreatOne": false
+    },
+    "Feral Pig": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Black Spots\n Black\n Brown Hybrid\n Dark Brown\n Pink"
+      ],
+      "GreatOne": false
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Merriam Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.62,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Sika Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 198.74,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Dark Spotted\n Red Spotted\n Spotted"
+      ],
+      "GreatOne": false
+    },
+    "Tahr": {
+      "MaxLevel": 5,
+      "DiamondMin": 101.87,
+      "RareFurs": [
+        "Albino\n Black\n Dark Brown\n Dark Red\n Light Brown\n Red\n Red Brown\n Straw\n White\n\n Gray\n Half\n Latte\n Scars\n Skull\n Snow"
+      ],
+      "GreatOne": true
+    }
+  },
+  "11": {
+    "Antelope Jackrabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 6.3,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Grey\n Melanistic\n Mottled"
+      ],
+      "GreatOne": false
+    },
+    "Collared Peccary": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.2,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Dark-Grey\n Grey\n Leucistic\n Melanistic\n Ochre"
+      ],
+      "GreatOne": false
+    },
+    "Coyote": {
+      "MaxLevel": 9,
+      "DiamondMin": 56.8,
+      "RareFurs": [
+        "Albino\n Dark-Grey\n Grey-Brown\n Light Grey\n Melanistic\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Desert Bighorn Sheep": {
+      "MaxLevel": 5,
+      "DiamondMin": 196.93,
+      "RareFurs": [
+        "Albino\n Brown\n Erythristic\n Grey\n Leucistic\n Light Brown\n Light Grey\n Piebald\n Melanistic\n Mosaic"
+      ],
+      "GreatOne": false
+    },
+    "Mexican Bobcat": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.68,
+      "RareFurs": [
+        "Albino\n Blue\n Brown\n Grey\n Melanistic\n Tan\n Red"
+      ],
+      "GreatOne": false
+    },
+    "Mule Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 312.17,
+      "RareFurs": [
+        "Albino\n Blonde\n Brown\n Dilute\n Erythristic Isabelline\n Erythristic Red\n Grey\n Leucistic\n Melanistic\n Mosaic\n Piebald\n\n Cobweb Enigma\n Dripple Drizzle\n Dusky Drift\n Milky Way\n Petal Puff"
+      ],
+      "GreatOne": true
+    },
+    "Pronghorn": {
+      "MaxLevel": 5,
+      "DiamondMin": 108,
+      "RareFurs": [
+        "Albino\n Brown\n Dark\n Leucistic\n Melanistic\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Rio Grande Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.6,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    }
+  },
+  "12": {
+    "American Alligator": {
+      "MaxLevel": 9,
+      "DiamondMin": 492,
+      "RareFurs": [
+        "Albino\n Dark-Brown\n Melanistic\n Olive\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Black Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 22.8,
+      "RareFurs": [
+        "Black\n Blonde\n Brown\n Cinnamon\n Dark\n Dusky\n\n Cream\n Spotted\n Spirit\n Chestnut"
+      ],
+      "GreatOne": true
+    },
+    "Bobwhite Quail": {
+      "MaxLevel": 3,
+      "DiamondMin": 238,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Common Raccoon": {
+      "MaxLevel": 5,
+      "DiamondMin": 12,
+      "RareFurs": [
+        "Albino\n Blonde\n Blonde Piebald\n Brown\n Grey\n Grey Piebald\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Eastern Cottontail Rabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 1.97,
+      "RareFurs": [
+        "Albino\n Brown\n Grey\n Leucistic\n Light Grey\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Eastern Wild Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.6,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Gray Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 6.43,
+      "RareFurs": [
+        "Albino\n Grey\n Leucistic\n Melanistic\n Piebald\n Red\n Two Tones"
+      ],
+      "GreatOne": false
+    },
+    "Green Winged Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 480,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Wild Hog": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.2,
+      "RareFurs": [
+        "Albino\n Black\n Black Spots\n Blackgold\n Brown Hybrid\n Dark Brown\n Pink"
+      ],
+      "GreatOne": false
+    }
+  },
+  "13": {
+    "Black Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 120,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Canada Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 8.59,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Eurasian Brown Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.7,
+      "RareFurs": [
+        "Albino\n Blond\n Cinnamon\n Dark Brown\n Gold\n Grey\n Light Brown\n Melanistic\n Red-Brown\n Spirit"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Lynx": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.68,
+      "RareFurs": [
+        "Albino\n Grey\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 354,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Eurasian Wigeon": {
+      "MaxLevel": 3,
+      "DiamondMin": 905,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Goldeneye": {
+      "MaxLevel": 3,
+      "DiamondMin": 1230,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Greylag Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.85,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Hazel Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 435,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Mountain Hare": {
+      "MaxLevel": 3,
+      "DiamondMin": 5.6,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Dark Grey\n Grey\n Light Brown\n Molting\n White"
+      ],
+      "GreatOne": false
+    },
+    "Raccoon Dog": {
+      "MaxLevel": 9,
+      "DiamondMin": 9.29,
+      "RareFurs": [
+        "Albino\n Black White\n Dark Brown\n Light Brown\n Grey\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Rock Ptarmigan": {
+      "MaxLevel": 3,
+      "DiamondMin": 709,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Tufted Duck": {
+      "MaxLevel": 3,
+      "DiamondMin": 963,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Tundra Bean Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.16,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Western Capercaillie": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.64,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Willow Ptarmigan": {
+      "MaxLevel": 3,
+      "DiamondMin": 772,
+      "RareFurs": [],
+      "GreatOne": false
+    }
+  },
+  "14": {
+    "Black Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 22.8,
+      "RareFurs": [
+        "Black\n Blonde\n Brown\n Cinnamon\n Dark\n Dusky\n\n Cream\n Spotted\n Spirit\n Chestnut"
+      ],
+      "GreatOne": true
+    },
+    "Bobcat": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.68,
+      "RareFurs": [
+        "Albino\n Blue\n Brown\n Grey\n Melanistic\n Red\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Bobwhite Quail": {
+      "MaxLevel": 3,
+      "DiamondMin": 238,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Common Raccoon": {
+      "MaxLevel": 5,
+      "DiamondMin": 12,
+      "RareFurs": [
+        "Albino\n Blonde\n Blonde Piebald\n Brown\n Grey\n Grey Piebald\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Coyote": {
+      "MaxLevel": 9,
+      "DiamondMin": 56.8,
+      "RareFurs": [
+        "Albino\n Dark-Grey\n Grey-Brown\n Light Grey\n Melanistic\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Eastern Cottontail Rabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 1.97,
+      "RareFurs": [
+        "Albino\n Brown\n Grey\n Leucistic\n Light Grey\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Eastern Wild Turkey": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.6,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Goldeneye": {
+      "MaxLevel": 3,
+      "DiamondMin": 1230,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Gray Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 6.43,
+      "RareFurs": [
+        "Albino\n Grey\n Leucistic\n Melanistic\n Piebald\n Red\n Two Tones"
+      ],
+      "GreatOne": false
+    },
+    "Green Winged Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 480,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    }
+  },
+  "16": {
+    "Axis Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 217.2,
+      "RareFurs": [
+        "Albino\n Dark\n Melanistic\n Orange\n Piebald\n Spotted"
+      ],
+      "GreatOne": false
+    },
+    "Banteng": {
+      "MaxLevel": 5,
+      "DiamondMin": 137,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Dark Brown\n Mocha\n Orange\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Eastern Gray Kangaroo": {
+      "MaxLevel": 9,
+      "DiamondMin": 492,
+      "RareFurs": [
+        "Albino\n Grey Brown\n Grey\n Leucistic\n Melanistic\n Brown"
+      ],
+      "GreatOne": false
+    },
+    "Fallow Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 249.99,
+      "RareFurs": [
+        "Albino\n Chocolate\n Dark\n Dark Spotted\n Melanistic\n Piebald\n Red Spotted\n Spotted\n White \n Golden\n Mocha\n Hooded\n Silver"
+      ],
+      "GreatOne": true
+    },
+    "Feral Goat": {
+      "MaxLevel": 5,
+      "DiamondMin": 208.71,
+      "RareFurs": [
+        "Albino\n Black\n Black Brown\n Back White\n Blonde\n Brown\n Dark Brown\n Mixed\n White\n White Brown"
+      ],
+      "GreatOne": false
+    },
+    "Feral Pig": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Black Spots\n Black\n Brown Hybrid\n Dark Brown\n Pink"
+      ],
+      "GreatOne": false
+    },
+    "Hog Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 108.68,
+      "RareFurs": [
+        "Spotted\n Dark Spotted\n Dark Brown\n Piebald\n Leucistic\n Brown"
+      ],
+      "GreatOne": false
+    },
+    "Javan Rusa": {
+      "MaxLevel": 5,
+      "DiamondMin": 148.78,
+      "RareFurs": [
+        "Albino\n Brown\n Leucistic\n Light Brown\n Piebald\n Two Tones\n White Brown"
+      ],
+      "GreatOne": false
+    },
+    "Magpie Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.02,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    },
+    "Saltwater Crocodile": {
+      "MaxLevel": 9,
+      "DiamondMin": 1015,
+      "RareFurs": [
+        "Albino\n Grey\n Dark Brown\n Leucistic\n Light Brown\n Melanistic\n Olive\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Sambar": {
+      "MaxLevel": 5,
+      "DiamondMin": 166.24,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Dusky Gradient\n Leucistic\n Light Brown\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Stubble Quail": {
+      "MaxLevel": 3,
+      "DiamondMin": 126,
+      "RareFurs": [],
+      "GreatOne": false
+    }
+  },
+  "17": {
+    "Barasingha": {
+      "MaxLevel": 5,
+      "DiamondMin": 226.05,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Dark Red\n Leucistic\n Light Brown\n Melanistic\n Piebald\n Red"
+      ],
+      "GreatOne": false
+    },
+    "Bengal Tiger": {
+      "MaxLevel": 9,
+      "DiamondMin": 57,
+      "RareFurs": [
+        "Albino\n Gold\n Orange\n Pseudo-Melanistic\n Pseudo-Melanistic White\n Melanistic\n White\n White Stripeless"
+      ],
+      "GreatOne": false
+    },
+    "Blackbuck": {
+      "MaxLevel": 5,
+      "DiamondMin": 132.2,
+      "RareFurs": [
+        "Albino\n Beige\n Brown\n Dark Brown\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Blue Sheep": {
+      "MaxLevel": 5,
+      "DiamondMin": 154.08,
+      "RareFurs": [
+        "Albino\n Blue Gray\n Brown\n Leucistic\n Melanistic\n Slate Gray\n Yellow"
+      ],
+      "GreatOne": false
+    },
+    "Greylag Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.85,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Nilgai": {
+      "MaxLevel": 5,
+      "DiamondMin": 94.89,
+      "RareFurs": [
+        "Blue\n Brown\n Dark Brown\n Light Brown\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Northern Red Muntjac": {
+      "MaxLevel": 5,
+      "DiamondMin": 35.24,
+      "RareFurs": [
+        "Albino \n Leucistic\n Melanistic\n Red"
+      ],
+      "GreatOne": false
+    },
+    "Snow Leopard": {
+      "MaxLevel": 9,
+      "DiamondMin": 29,
+      "RareFurs": [
+        "Albino\n Caramel\n Leucistic\n Melanistic\n Snow"
+      ],
+      "GreatOne": false
+    },
+    "Tahr": {
+      "MaxLevel": 5,
+      "DiamondMin": 101.87,
+      "RareFurs": [
+        "Albino\n Black\n Dark Brown\n Dark Red\n Light Brown\n Red\n Red Brown\n Straw\n White\n\n Gray\n Half\n Latte\n Scars\n Skull\n Snow"
+      ],
+      "GreatOne": true
+    },
+    "Tibetan Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 6.37,
+      "RareFurs": [
+        "Albino\n Grey\n Leucistic\n Melanistic\n Orange\n Red\n Sand\n Smoke\n Tawny"
+      ],
+      "GreatOne": false
+    },
+    "Water Buffalo": {
+      "MaxLevel": 9,
+      "DiamondMin": 167.54,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Grey\n Orange"
+      ],
+      "GreatOne": false
+    },
+    "Wild Yak": {
+      "MaxLevel": 9,
+      "DiamondMin": 273.23,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Dark Red\n Dark Red Brown\n Gold\n Jet Black\n Jet Brown\n Leucistic"
+      ],
+      "GreatOne": false
+    },
+    "Woolly Hare": {
+      "MaxLevel": 3,
+      "DiamondMin": 3.28,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Light Brown\n Light Grey\n Molting\n White"
+      ],
+      "GreatOne": false
+    }
+  },
+  "18": {
+    "Black Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 120,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Common Raccoon": {
+      "MaxLevel": 5,
+      "DiamondMin": 12,
+      "RareFurs": [
+        "Albino\n Blonde\n Blonde Piebald\n Brown\n Grey\n Grey Piebald\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 354,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Eurasian Wigeon": {
+      "MaxLevel": 3,
+      "DiamondMin": 905,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "European Rabbit": {
+      "MaxLevel": 3,
+      "DiamondMin": 2.42,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Leucistic\n Light Brown\n Light Grey\n Melanistic\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Ferruginous Duck": {
+      "MaxLevel": 3,
+      "DiamondMin": 1050,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Gadwall": {
+      "MaxLevel": 3,
+      "DiamondMin": 1050,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Goldeneye": {
+      "MaxLevel": 3,
+      "DiamondMin": 1230,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Greylag Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.85,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Raccoon Dog": {
+      "MaxLevel": 9,
+      "DiamondMin": 9.29,
+      "RareFurs": [
+        "Albino\n Black White\n Dark Brown\n Light Brown\n Grey\n Orange\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Tufted Duck": {
+      "MaxLevel": 3,
+      "DiamondMin": 963,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Tundra Bean Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.16,
+      "RareFurs": [],
+      "GreatOne": false
+    }
+  },
+  "19": {
+    "Black Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 22.8,
+      "RareFurs": [
+        "Black\n Blonde\n Brown\n Cinnamon\n Dark\n Dusky\n\n Cream\n Spotted\n Spirit\n Chestnut"
+      ],
+      "GreatOne": true
+    },
+    "Canada Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 8.59,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Dusky Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 151,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Gray Wolf": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Egg White\n Dark Grey\n Grey\n Melanistic\n Melanistic Charcoal\n Red Brown\n\n Dawnbreak\n Frostbite\n Gravehide\n Hollow\n Razorwind\n Scarborne\n Twinsoul\n Vanguard"
+      ],
+      "GreatOne": true
+    },
+    "Mallard": {
+      "MaxLevel": 3,
+      "DiamondMin": 19.61,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Manitoban Elk": {
+      "MaxLevel": 5,
+      "DiamondMin": 457.56,
+      "RareFurs": [
+        "Albino\n Brown Maned\n Dark\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Moose": {
+      "MaxLevel": 5,
+      "DiamondMin": 274.99,
+      "RareFurs": [
+        "Acromelanistic\n Albino\n Brown\n Dark-Brown\n Light Brown\n Melanistic\n Mosaic\n Piebald\n Tan\nMission Exclusive: Mocha \n Two Tone\n Ashen\n Birch\n Oak\n Speckled"
+      ],
+      "GreatOne": true
+    },
+    "Mountain Goat": {
+      "MaxLevel": 5,
+      "DiamondMin": 107.67,
+      "RareFurs": [
+        "Albino\n Beige\n Light Brown\n Light Grey\n Melanistic\n White"
+      ],
+      "GreatOne": false
+    },
+    "Mule Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 312.17,
+      "RareFurs": [
+        "Albino\n Blonde\n Brown\n Dilute\n Erythristic Isabelline\n Erythristic Red\n Grey\n Leucistic\n Melanistic\n Mosaic\n Piebald\n\n Cobweb Enigma\n Dripple Drizzle\n Dusky Drift\n Milky Way\n Petal Puff"
+      ],
+      "GreatOne": true
+    },
+    "North American Beaver": {
+      "MaxLevel": 5,
+      "DiamondMin": 30.4,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald\n Reddish Brown"
+      ],
+      "GreatOne": false
+    },
+    "Northern Pintail": {
+      "MaxLevel": 3,
+      "DiamondMin": 1040,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Pronghorn": {
+      "MaxLevel": 5,
+      "DiamondMin": 108,
+      "RareFurs": [
+        "Albino\n Brown\n Dark\n Leucistic\n Melanistic\n Piebald\n Tan"
+      ],
+      "GreatOne": false
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Rocky Mountain Bighorn Sheep": {
+      "MaxLevel": 5,
+      "DiamondMin": 196.93,
+      "RareFurs": [
+        "Albino\n Black\n Bronze\n Brown\n Grey\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Snow Goose": {
+      "MaxLevel": 5,
+      "DiamondMin": 3.85,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Wood Bison": {
+      "MaxLevel": 5,
+      "DiamondMin": 158,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Ginger\n Ginger Split\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Wood Duck": {
+      "MaxLevel": 3,
+      "DiamondMin": 670,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Woodland Caribou": {
+      "MaxLevel": 5,
+      "DiamondMin": 430.23,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    }
+  },
+  "20": {
+    "American Mink": {
+      "MaxLevel": 5,
+      "DiamondMin": 151,
+      "RareFurs": [
+        "Albino\n Black\n Chestnut\n Dark Brown\n Leucistic\n Melanistic\n Piebald\n Silver"
+      ],
+      "GreatOne": false
+    },
+    "Black Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 120,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Eurasian Pine Marten": {
+      "MaxLevel": 5,
+      "DiamondMin": 208,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald\n Tawny"
+      ],
+      "GreatOne": false
+    },
+    "Eurasian Wigeon": {
+      "MaxLevel": 3,
+      "DiamondMin": 905,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Eurasian Woodcock": {
+      "MaxLevel": 3,
+      "DiamondMin": 41.03,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "European Badger": {
+      "MaxLevel": 5,
+      "DiamondMin": 16,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Grey\n Dilute\n Erythristic Red\n Grey\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Fallow Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 249.99,
+      "RareFurs": [
+        "Albino\n Chocolate\n Dark\n Dark Spotted\n Melanistic\n Piebald\n Red Spotted\n Spotted\n White \n Golden\n Mocha\n Hooded\n Silver"
+      ],
+      "GreatOne": true
+    },
+    "Feral Goat": {
+      "MaxLevel": 5,
+      "DiamondMin": 208.71,
+      "RareFurs": [
+        "Albino\n Black\n Black Brown\n Back White\n Blonde\n Brown\n Dark Brown\n Mixed\n White\n White Brown"
+      ],
+      "GreatOne": false
+    },
+    "Mountain Hare": {
+      "MaxLevel": 3,
+      "DiamondMin": 5.6,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Dark Grey\n Grey\n Light Brown\n Molting\n White"
+      ],
+      "GreatOne": false
+    },
+    "Red Deer": {
+      "MaxLevel": 9,
+      "DiamondMin": 251.07,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Erythristic\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": true
+    },
+    "Red Fox": {
+      "MaxLevel": 9,
+      "DiamondMin": 14.05,
+      "RareFurs": [
+        "Albino\n Dark Red\n Melanistic\n Orange\n Piebald\n Red\n\n Candycane\n Cherry Blossom\n Licorice\n Midnight Poppy\n Mystic Snowdrop\n Peppermint\n Rosebud Frost\n Scarlet Nightshade"
+      ],
+      "GreatOne": true
+    },
+    "Red Grouse": {
+      "MaxLevel": 3,
+      "DiamondMin": 72.75,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Ring-Necked Pheasant": {
+      "MaxLevel": 3,
+      "DiamondMin": 20.3,
+      "RareFurs": [],
+      "GreatOne": true
+    },
+    "Roe Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 81.86,
+      "RareFurs": [
+        "Albino\n Brown\n Dark Brown\n Dark Grey\n Leucistic\n Melanistic\n Orange\n Piebald\n Tan"
+      ],
+      "GreatOne": true
+    },
+    "Sika Deer": {
+      "MaxLevel": 5,
+      "DiamondMin": 198.74,
+      "RareFurs": [
+        "Albino\n Black\n Brown\n Dark Spotted\n Red Spotted\n Spotted"
+      ],
+      "GreatOne": false
+    },
+    "Western Capercaillie": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.64,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Wild Boar": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.25,
+      "RareFurs": [
+        "Albino\n Blackgold\n Brown\n Dark Brown\n Light Brown\n Melanistic\n Purplegrey\n\n Brindle\n Butterscotch\n Chalk\n Cinder\n Scorch\n Smolder\n Stitch\n Stripple"
+      ],
+      "GreatOne": true
+    }
+  },
+  "21": {
+    "Black Caiman": {
+      "MaxLevel": 9,
+      "DiamondMin": 468,
+      "RareFurs": [
+        "Albino\n Dark Green\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Capybara": {
+      "MaxLevel": 4,
+      "DiamondMin": 66.5,
+      "RareFurs": [
+        "Albino\n Dark Brown\n Leucistic\n Light Brown\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Cinnamon Teal": {
+      "MaxLevel": 3,
+      "DiamondMin": 4.6,
+      "RareFurs": [],
+      "GreatOne": false
+    },
+    "Collared Peccary": {
+      "MaxLevel": 5,
+      "DiamondMin": 144.2,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Dark-Grey\n Grey\n Leucistic\n Melanistic\n Ochre"
+      ],
+      "GreatOne": false
+    },
+    "Greater Grison": {
+      "MaxLevel": 5,
+      "DiamondMin": 356,
+      "RareFurs": [
+        "Albino\n Dark\n Erythristic Chocolate\n Grey\n Leucistic\n Melanistic\n Pale\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Jaguar": {
+      "MaxLevel": 9,
+      "DiamondMin": 43.75,
+      "RareFurs": [
+        "Spotted\n Rosetted\n Melanistic Charcoal\n Melanistic\n Pseudo-Melanistic\n Piebald\n Leucistic\n Albino \n Ivorybark\n Porcelain\n Rosewash\n Tapestry\n Umbrafade\n Vellum"
+      ],
+      "GreatOne": true
+    },
+    "Ocelot": {
+      "MaxLevel": 9,
+      "DiamondMin": 27.68,
+      "RareFurs": [
+        "Bold\n Fine\n Rosetted\n Pseudo Melanistic\n Melanistic Charcoal\n Melanistic\n Erythristic Red\n Erythristic Isabelline\n Albino\n Piebald\n Leucistic"
+      ],
+      "GreatOne": false
+    },
+    "Puma": {
+      "MaxLevel": 9,
+      "DiamondMin": 39,
+      "RareFurs": [
+        "Albino\n Dark Red\n Grey\n Light Brown\n Melanistic"
+      ],
+      "GreatOne": false
+    },
+    "South American Tapir": {
+      "MaxLevel": 9,
+      "DiamondMin": 144,
+      "RareFurs": [
+        "Albino\n Brown\n Brown Grey\n Erythristic\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Spectacled Bear": {
+      "MaxLevel": 9,
+      "DiamondMin": 20.45,
+      "RareFurs": [
+        "X markings\n Messy markings\n Glasses markings\n Minimalistic markings\n Abundant markings\n No markings\n Blonde faced\n Piebald\n Leucistic\n Melanistic\n Erythristic Red\n Erythristic Isabelline\n Albino"
+      ],
+      "GreatOne": false
+    },
+    "Vicu\u00F1a": {
+      "MaxLevel": 5,
+      "DiamondMin": 214,
+      "RareFurs": [
+        "Albino\n Beige\n Dark\n Dilute Silver\n Erythristic Isabelline\n Leucistic\n Melanistic\n Piebald"
+      ],
+      "GreatOne": false
+    },
+    "Whitetail Deer": {
+      "MaxLevel": 3,
+      "DiamondMin": 255.09,
+      "RareFurs": [
+        "Albino\n Brown\n Dark-Brown\n Melanistic\n Piebald\n Red-Brown\n Tan"
+      ],
+      "GreatOne": true
+    }
+  }
+}
