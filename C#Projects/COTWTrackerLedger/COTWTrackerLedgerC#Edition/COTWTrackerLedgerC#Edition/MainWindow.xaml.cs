@@ -10,35 +10,26 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using COTWTrackerLedgerC_Edition.SpeciesMetaData;
+using COTWTrackerLedgerC_Edition.ReserveBounds;
+using COTWTrackerLedgerC_Edition.ReserveData;
+using CsvHelper;
+using CsvHelper.Configuration;
+using System.Globalization;
+using OpenTK.Graphics.ES20;
+using ScottPlot;
+using SkiaSharp;
+using Svg.Skia;
+using Microsoft.Win32;
+using ShimSkiaSharp.Editing;
+
 
 namespace COTWTrackerLedgerC_Edition
 {
-    public class SpeciesDetail
-    {
-        public int MaxLevel { get; set; }
-        public double DiamondMin { get; set; }
-        public List<string> RareFurs { get; set; } = new();
-        public bool GreatOne { get; set; }
-    }
 
-    public class ReserveBound
-    {
-        [JsonPropertyName("X_MIN")]
-        public double XMin { get; set; }
-
-        [JsonPropertyName("X_MAX")]
-        public double XMax { get; set; }
-
-        [JsonPropertyName("Z_MIN")]
-        public double ZMin { get; set; }
-
-        [JsonPropertyName("Z_MAX")]
-        public double ZMax { get; set; }
-    }
 
     public partial class MainWindow : Window
     {
-        private const string path = AppConfig.RESERVE_NAMES_PATH;
         private const int ReserveID = 0;
         private const string ReserveName = "Hirschfelden Hunting Reserve";
         private Reserve reserve = new Reserve(ReserveName, ReserveID);
@@ -52,7 +43,6 @@ namespace COTWTrackerLedgerC_Edition
 
         public MainWindow()
         {
-            SQLitePCL.Batteries_V2.Init();
             InitializeComponent();
 
             LoadReserves(ReserveID);
@@ -60,13 +50,13 @@ namespace COTWTrackerLedgerC_Edition
 
         private void LoadReserves(int defaultReserveID)
         {
-            if (!File.Exists(path))
+            if (!File.Exists(AppConfig.RESERVE_NAMES_PATH))
             {
                 MessageBox.Show("Reserve file not found.");
                 return;
             }
 
-            string jsonString = File.ReadAllText(path);
+            string jsonString = File.ReadAllText(AppConfig.RESERVE_NAMES_PATH);
             var reserves = JsonSerializer.Deserialize<Dictionary<string, string>>(jsonString);
 
             if (reserves != null)
@@ -87,7 +77,7 @@ namespace COTWTrackerLedgerC_Edition
             LoadReserveBackgroundPNG();
         }
 
-        private void LoadReserveBackgroundPNG()
+       private void LoadReserveBackgroundPNG()
         {
             if (Directory.Exists(AppConfig.RESERVE_BACKGROUND_PNG_PATH) && File.Exists(AppConfig.RESERVE_BOUNDS_PATH))
             {
@@ -100,19 +90,31 @@ namespace COTWTrackerLedgerC_Edition
                     AnimalPlot.Height = 800;
                     AnimalPlot.Width = 800;
 
+                    double left = bounds.XMin;
+                    double right = bounds.XMax;
+                    double bottom = bounds.ZMin;
+                    double top = bounds.ZMax;
+
+
                     // Update active bounds for the newly selected reserve
-                    _currentXMin = Math.Min(bounds.XMin, bounds.XMax);
-                    _currentXMax = Math.Max(bounds.XMin, bounds.XMax);
-                    _currentYMin = Math.Min(bounds.ZMin, bounds.ZMax);
-                    _currentYMax = Math.Max(bounds.ZMin, bounds.ZMax);
+                    _currentXMin = Math.Min(left, right);
+                    _currentXMax = Math.Max(left, right);
+                    _currentYMin = Math.Min(bottom, top);
+                    _currentYMax = Math.Max(bottom, top);
 
                     // 1. Clear previous plot elements and rules
                     AnimalPlot.Plot.Clear();
                     AnimalPlot.Plot.Axes.Rules.Clear();
 
-                    // 2. Set minimum zoom span
-                    double minZoomSpanX = 2000;
-                    double minZoomSpanY = 2000;
+                    // 2. Lock 1:1 aspect ratio to avoid image stretching when panning/zooming
+                    AnimalPlot.Plot.Axes.Rules.Add(new ScottPlot.AxisRules.SquareZoomOut(
+                    AnimalPlot.Plot.Axes.Bottom,
+                    AnimalPlot.Plot.Axes.Left
+                    ));
+
+                    // 3. Set minimum zoom span
+                    double minZoomSpanX = (reserveID == 18) ? 500 : 2000;
+                    double minZoomSpanY = (reserveID == 18) ? 500 : 2000;
 
                     AnimalPlot.Plot.Axes.Rules.Add(new ScottPlot.AxisRules.MinimumSpan(
                         AnimalPlot.Plot.Axes.Bottom,
@@ -121,14 +123,17 @@ namespace COTWTrackerLedgerC_Edition
                         minZoomSpanY
                     ));
 
-                    // 3. Load background map image
+                    // 4. Load background map image
                     string pngPath = Path.Combine(AppConfig.RESERVE_BACKGROUND_PNG_PATH, $"reserve_{reserveID}_full.png");
                     if (File.Exists(pngPath))
                     {
-                        byte[] imageBytes = File.ReadAllBytes(pngPath);
+                    byte[] imageBytes = File.ReadAllBytes(pngPath);
+                        // 2. Map ImageRect with precise Left, Right, Bottom, Top bounds
                         var mapBitmap = new ScottPlot.Image(imageBytes);
 
-                        var imageBounds = new ScottPlot.CoordinateRect(_currentXMin, _currentXMax, _currentYMin, _currentYMax);
+                        // ScottPlot CoordinateRect constructor: (double left, double right, double bottom, double top)
+                        var imageBounds = new ScottPlot.CoordinateRect(left, right, bottom, top);
+
                         var imagePlottable = new ScottPlot.Plottables.ImageRect()
                         {
                             Image = mapBitmap,
@@ -138,15 +143,15 @@ namespace COTWTrackerLedgerC_Edition
                         AnimalPlot.Plot.Add.Plottable(imagePlottable);
                     }
 
-                    // 4. Set initial view limits
+                    // 5. Set initial view limits
                     AnimalPlot.Plot.Axes.SetLimits(_currentXMin, _currentXMax, _currentYMin, _currentYMax);
 
-                    // 5. Hide grid lines and empty axis tick generators to avoid shifting frame artifacts
+                    // 6. Hide grid lines and empty axis tick generators
                     AnimalPlot.Plot.HideGrid();
                     AnimalPlot.Plot.Axes.Bottom.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
                     AnimalPlot.Plot.Axes.Left.TickGenerator = new ScottPlot.TickGenerators.EmptyTickGenerator();
 
-                    // 6. Ensure the render boundary clamp handler is attached exactly once
+                    // 7. Ensure render boundary clamp handler is attached exactly once
                     if (!_isRenderHandlerAttached)
                     {
                         AnimalPlot.Plot.RenderManager.RenderStarting += OnRenderStarting;
@@ -154,11 +159,13 @@ namespace COTWTrackerLedgerC_Edition
                     }
 
                     AnimalPlot.Refresh();
+
+                    PlotNeedZoneCoordinates();
+
                 }
             }
-        }
+       }
 
-        // Class-level handler that dynamically clamps view limits to the current reserve
         private void OnRenderStarting(object? sender, ScottPlot.RenderPack e)
         {
             var limits = AnimalPlot.Plot.Axes.GetLimits();
@@ -226,7 +233,7 @@ namespace COTWTrackerLedgerC_Edition
             {
                 string jsonString = File.ReadAllText(AppConfig.SPECIES_METADATA_PATH);
 
-                var speciesDict = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, SpeciesDetail>>>(jsonString);
+                var speciesDict = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, SpeciesMetaData.SpeciesMetaData>>>(jsonString);
 
                 if (speciesDict != null && speciesDict.TryGetValue(reserveID.ToString(), out var species))
                 {
@@ -242,6 +249,82 @@ namespace COTWTrackerLedgerC_Edition
                 SpeciesListBox.ItemsSource = null;
             }
         }
+        private ScottPlot.Image RenderSvgToScottPlotImage(string svgPath, int width = 32, int height = 32)
+        {
+            var svg = new Svg.Skia.SKSvg();
+            svg.Load(svgPath);
+
+
+            SKBitmap skBitmap = new SKBitmap(width, height);
+
+            using (var canvas = new SKCanvas(skBitmap)) 
+            {
+                canvas.Clear(SKColors.Transparent);
+                canvas.DrawPicture(svg.Picture);
+            }
+
+            return new ScottPlot.Image(skBitmap.Encode(SKEncodedImageFormat.Png, 100).ToArray());
+
+        }
+        private void PlotNeedZoneCoordinates()
+        {
+            ScottPlot.Image? drinkIcon = null;
+            ScottPlot.Image? feedIcon = null;
+            ScottPlot.Image? restIcon = null;
+
+            if (File.Exists(AppConfig.DRINK_ZONE_SVG_PATH) && File.Exists(AppConfig.FEED_ZONE_SVG_PATH) && File.Exists(AppConfig.REST_ZONE_SVG_PATH))
+            {
+                drinkIcon = RenderSvgToScottPlotImage(AppConfig.DRINK_ZONE_SVG_PATH, 24, 24);
+                feedIcon = RenderSvgToScottPlotImage(AppConfig.FEED_ZONE_SVG_PATH, 24, 24);
+                restIcon = RenderSvgToScottPlotImage(AppConfig.REST_ZONE_SVG_PATH, 24, 24);
+            }
+            else
+            {
+                MessageBox.Show("One or more Need Zone SVG files are missing.");
+                return;
+            }
+
+            NeedZoneRecord[] needZones = NeedZoneRecord.LoadNeedZoneData(reserve.GetReserveID()).ToArray();
+            double yCenterBound = _currentYMin + _currentYMax;
+
+            var feedX = new List<double>(); var feedY = new List<double>();
+            var drinkX = new List<double>(); var drinkY = new List<double>();
+            var restX = new List<double>(); var restY = new List<double>();
+
+            foreach (var zone in needZones)
+            {
+                double x = zone.PositionX;
+                double y = yCenterBound - zone.PositionZ;
+
+                switch (zone.NeedType)
+                {
+                    case 1: feedX.Add(x); feedY.Add(y); break;
+                    case 2: drinkX.Add(x); drinkY.Add(y); break;
+                    case 3: restX.Add(x); restY.Add(y); break;
+                }
+            }
+
+            AddIconMarkerGroup(feedX, feedY, feedIcon);
+            AddIconMarkerGroup(drinkX, drinkY, drinkIcon);
+            AddIconMarkerGroup(restX, restY, restIcon);
+
+            AnimalPlot.Refresh();
+        }
+
+        private void AddIconMarkerGroup(List<double> xs, List<double> ys, ScottPlot.Image? icon)
+        {
+            if (xs.Count == 0 || icon == null)
+                return;
+
+            for (int i = 0; i < xs.Count; i++)
+            {
+                AnimalPlot.Plot.Add.ImageMarker(new ScottPlot.Coordinates(xs[i], ys[i]), icon);
+            }
+        }
+
+
+
+
 
         private void ReserveComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
